@@ -33,7 +33,7 @@ export default function DashboardPreview() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-4xl font-bold tracking-tight text-slate-900 mb-4"
+            className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 mb-4"
           >
             Inteligencia a primera vista
           </motion.h2>
@@ -58,22 +58,22 @@ export default function DashboardPreview() {
           className="rounded-3xl border border-slate-200 bg-white shadow-[0_32px_80px_rgba(15,23,42,0.10)] overflow-hidden"
         >
           {/* Mac-style title bar */}
-          <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-5 py-3">
-            <div className="flex items-center gap-2">
-              <span className="h-3 w-3 rounded-full bg-red-400" />
-              <span className="h-3 w-3 rounded-full bg-amber-400" />
-              <span className="h-3 w-3 rounded-full bg-emerald-400" />
+          <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-4 py-3 gap-2">
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-red-400" />
+              <span className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-amber-400" />
+              <span className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-emerald-400" />
             </div>
-            <div className="flex items-center gap-2 rounded-lg bg-white border border-slate-200 px-3 py-1">
-              <div className="flex h-4 w-4 items-center justify-center rounded bg-brand-600">
+            <div className="hidden sm:flex items-center gap-2 rounded-lg bg-white border border-slate-200 px-3 py-1 min-w-0 flex-1 max-w-xs mx-auto">
+              <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-brand-600">
                 <Layers className="h-2.5 w-2.5 text-white" />
               </div>
-              <span className="text-xs font-medium text-slate-600">
+              <span className="text-xs font-medium text-slate-600 truncate">
                 Layers Intel — Centro de Mando
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <button className="flex items-center gap-1 rounded-lg bg-white border border-slate-200 px-2 py-1 text-[10px] text-slate-500 hover:bg-slate-50 transition-colors">
+            <div className="flex items-center gap-2 shrink-0">
+              <button className="hidden sm:flex items-center gap-1 rounded-lg bg-white border border-slate-200 px-2 py-1 text-[10px] text-slate-500 hover:bg-slate-50 transition-colors">
                 <RefreshCw className="h-2.5 w-2.5" />
                 En vivo
               </button>

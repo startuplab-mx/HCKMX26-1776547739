@@ -6,23 +6,23 @@ import { Building2, Briefcase, Globe, Shield } from "lucide-react";
 const partners = [
   {
     icon: Building2,
-    label: "Gobierno",
-    sub: "Agencias Municipales y Federales",
+    label: "Instituciones y Gobierno",
+    sub: "Procuradurías, fiscalías y agencias",
   },
   {
     icon: Briefcase,
-    label: "Empresas",
-    sub: "Seguridad Corporativa",
+    label: "Empresas y Partners",
+    sub: "Inteligencia corporativa y operativa",
   },
   {
     icon: Globe,
     label: "Plataformas Digitales",
-    sub: "Equipos de Confianza y Seguridad",
+    sub: "Protección y confianza digital",
   },
   {
     icon: Shield,
-    label: "Equipos de Seguridad",
-    sub: "SOC e Inteligencia",
+    label: "Equipos de Inteligencia",
+    sub: "Análisis, OSINT y respuesta",
   },
 ];
 
@@ -35,9 +35,9 @@ export default function TrustBadges() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center text-sm font-medium text-slate-400 uppercase tracking-widest mb-10"
+          className="text-center text-xs sm:text-sm font-medium text-slate-400 uppercase tracking-widest mb-10 px-4"
         >
-          Diseñado para seguridad pública, seguridad empresarial e inteligencia en plataformas digitales
+          Diseñado para instituciones, partners, equipos de inteligencia y soluciones de protección digital
         </motion.p>
 
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">

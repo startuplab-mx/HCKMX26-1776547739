@@ -27,17 +27,17 @@ export default function ResponsibleAI() {
               transition={{ duration: 0.5 }}
               className="mb-4"
             >
-              <SectionLabel>Ética y Responsabilidad</SectionLabel>
+              <SectionLabel>Ética, Trazabilidad y Privacidad</SectionLabel>
             </motion.div>
             <motion.h2
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-4xl font-bold tracking-tight text-slate-900 mb-5"
+              className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 mb-5"
             >
-              IA que puedes{" "}
-              <span className="gradient-text">confiar y auditar</span>
+              Inteligencia que puedes{" "}
+              <span className="gradient-text">trazar y auditar</span>
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 16 }}
@@ -46,9 +46,9 @@ export default function ResponsibleAI() {
               transition={{ duration: 0.5, delay: 0.15 }}
               className="text-lg text-slate-500 leading-relaxed mb-8"
             >
-              Creemos que las herramientas de inteligencia deben construirse con
-              restricciones éticas rigurosas. Cada función de Layers Intel está
-              diseñada para potenciar el juicio humano — no reemplazarlo.
+              Creemos que la inteligencia de riesgo debe ser trazable, auditable
+              y construida con principios éticos rigurosos. Layers Core está
+              diseñado para potenciar el juicio humano e institucional — no reemplazarlo.
             </motion.p>
 
             {/* Certifications */}
@@ -59,7 +59,7 @@ export default function ResponsibleAI() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="flex flex-wrap gap-3"
             >
-              {["SOC 2 Type II", "ISO 27001", "GDPR Ready", "CCPA Cumplido"].map(
+              {["Arquitectura de Seguridad", "Privacidad desde el Diseño", "Trazabilidad Total", "Auditabilidad"].map(
                 (cert) => (
                   <span
                     key={cert}

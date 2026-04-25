@@ -7,6 +7,7 @@ import {
   Truck,
   Globe,
   Siren,
+  Shield,
 } from "lucide-react";
 import { useCases } from "@/lib/mockData";
 import SectionLabel from "@/components/ui/SectionLabel";
@@ -18,6 +19,7 @@ const iconMap: Record<string, React.ElementType> = {
   Truck,
   Globe,
   Siren,
+  Shield,
 };
 
 const cardColors = [
@@ -26,6 +28,7 @@ const cardColors = [
   "from-teal-50 to-white border-teal-100",
   "from-violet-50 to-white border-violet-100",
   "from-rose-50 to-white border-rose-100",
+  "from-emerald-50 to-white border-emerald-100",
 ];
 
 const iconColors = [
@@ -34,6 +37,7 @@ const iconColors = [
   "bg-teal-100 text-teal-600",
   "bg-violet-100 text-violet-600",
   "bg-rose-100 text-rose-600",
+  "bg-emerald-100 text-emerald-600",
 ];
 
 export default function UseCases() {
@@ -49,16 +53,16 @@ export default function UseCases() {
             transition={{ duration: 0.5 }}
             className="mb-4"
           >
-            <SectionLabel>Casos de Uso</SectionLabel>
+            <SectionLabel>Partners y Casos de Uso</SectionLabel>
           </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-4xl font-bold tracking-tight text-slate-900 mb-4"
+            className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 mb-4"
           >
-            Diseñado para los equipos que protegen lo que importa
+            Diseñado para los partners e instituciones que protegen lo que importa
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 16 }}
@@ -67,8 +71,9 @@ export default function UseCases() {
             transition={{ duration: 0.5, delay: 0.15 }}
             className="text-lg text-slate-500 leading-relaxed"
           >
-            Desde centros de mando municipales hasta operaciones de seguridad
-            corporativa, Layers Intel se adapta a las necesidades específicas de cada equipo.
+            Desde procuradurías y fiscalías hasta seguridad corporativa y
+            protección digital, Layers Intel se adapta a las necesidades específicas
+            de cada partner, institución o equipo.
           </motion.p>
         </div>
 
@@ -84,13 +89,11 @@ export default function UseCases() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.08 }}
                 whileHover={{ y: -4 }}
-                className={`group relative rounded-2xl border bg-gradient-to-br ${cardColors[i]} p-6 shadow-card hover:shadow-card-hover transition-all duration-300 ${
-                  i === 4 ? "sm:col-span-2 lg:col-span-1" : ""
-                }`}
+                className={`group relative rounded-2xl border bg-gradient-to-br ${cardColors[i % cardColors.length]} p-6 shadow-card hover:shadow-card-hover transition-all duration-300`}
               >
                 {/* Icon */}
                 <div
-                  className={`mb-4 flex h-11 w-11 items-center justify-center rounded-2xl ${iconColors[i]}`}
+                  className={`mb-4 flex h-11 w-11 items-center justify-center rounded-2xl ${iconColors[i % iconColors.length]}`}
                 >
                   <Icon className="h-5 w-5" />
                 </div>

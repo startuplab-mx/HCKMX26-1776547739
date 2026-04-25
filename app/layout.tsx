@@ -2,21 +2,24 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Layers Intel — Plataforma de Inteligencia de Riesgo con IA",
+  title: "Layers Intel — Inteligencia de Riesgo impulsada por IA",
   description:
-    "Layers Intel transforma señales territoriales, sociales y digitales en inteligencia de riesgo accionable para gobiernos, empresas y equipos de seguridad pública.",
+    "Layers Intel transforma datos territoriales, digitales, sociales y operativos en inteligencia accionable para partners, instituciones, empresas y equipos que necesitan anticipar, validar y responder ante riesgos.",
   keywords: [
     "inteligencia de riesgo",
-    "analítica con IA",
-    "mapas de calor de incidentes",
-    "inteligencia de amenazas digitales",
-    "seguridad pública",
+    "Layers Core",
     "OSINT",
+    "IOC",
+    "analítica con IA",
+    "inteligencia institucional",
+    "protección digital",
+    "control parental inteligente",
+    "inteligencia de amenazas",
   ],
   openGraph: {
-    title: "Layers Intel — Plataforma de Inteligencia de Riesgo con IA",
+    title: "Layers Intel — Inteligencia de Riesgo impulsada por IA",
     description:
-      "Transforma señales territoriales, sociales y digitales en inteligencia accionable.",
+      "Transforma datos fragmentados en inteligencia de riesgo accionable para partners, instituciones y equipos de seguridad.",
     type: "website",
   },
 };

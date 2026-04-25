@@ -76,16 +76,16 @@ export default function PlatformOverview() {
             transition={{ duration: 0.5 }}
             className="mb-4"
           >
-            <SectionLabel>Capacidades de la Plataforma</SectionLabel>
+            <SectionLabel>Capacidades de Layers Intel</SectionLabel>
           </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-4xl font-bold tracking-tight text-slate-900 mb-4"
+            className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 mb-4"
           >
-            Todo lo que necesitas para comprender el riesgo
+            Todo lo que necesitas para convertir datos en inteligencia
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 16 }}
@@ -94,8 +94,9 @@ export default function PlatformOverview() {
             transition={{ duration: 0.5, delay: 0.15 }}
             className="text-lg text-slate-500 leading-relaxed"
           >
-            Seis módulos de inteligencia integrados que trabajan juntos para
-            darte una visión completa del riesgo territorial, social y digital.
+            Seis módulos impulsados por Layers Core que trabajan juntos para
+            clasificar, correlacionar y convertir señales fragmentadas en
+            inteligencia de riesgo accionable para cualquier partner o institución.
           </motion.p>
         </div>
 

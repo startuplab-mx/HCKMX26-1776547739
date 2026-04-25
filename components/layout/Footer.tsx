@@ -11,7 +11,7 @@ export default function Footer() {
   return (
     <footer className="bg-slate-950 text-slate-400">
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-        <div className="grid grid-cols-2 gap-8 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-6 sm:gap-8 lg:grid-cols-5">
           {/* Marca */}
           <div className="col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2.5 mb-4">
@@ -23,8 +23,9 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-sm leading-relaxed text-slate-500 max-w-xs">
-              Plataforma de inteligencia impulsada por IA para ciudades más seguras
-              y decisiones de seguridad más inteligentes.
+              Plataforma de inteligencia de riesgo impulsada por IA para instituciones,
+              partners y equipos que necesitan convertir datos fragmentados en
+              decisiones accionables.
             </p>
           </div>
 

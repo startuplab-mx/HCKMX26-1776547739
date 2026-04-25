@@ -14,6 +14,8 @@ import {
   Activity,
   CheckCircle2,
   Radio,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
 
 import { isAuthenticated, logout } from "@/lib/auth";
@@ -41,10 +43,6 @@ function avgRisk(incs: typeof ALL_INCIDENTS) {
   return Math.round(incs.reduce((s, i) => s + i.risk, 0) / incs.length);
 }
 
-function countBy(incs: typeof ALL_INCIDENTS, key: keyof (typeof ALL_INCIDENTS)[0], val: string) {
-  return incs.filter((i) => String(i[key]) === val).length;
-}
-
 // ── Mini stat card ────────────────────────────────────────────────────────────
 
 function StatCard({
@@ -65,11 +63,11 @@ function StatCard({
     green: "text-emerald-600 bg-emerald-50",
   };
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-card">
+    <div className="rounded-2xl border border-slate-100 bg-white p-3 sm:p-4 shadow-card">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">
         {label}
       </p>
-      <p className={`text-2xl font-bold ${colorMap[color].split(" ")[0]}`}>{value}</p>
+      <p className={`text-xl sm:text-2xl font-bold ${colorMap[color].split(" ")[0]}`}>{value}</p>
       {sub && <p className="text-[11px] text-slate-400 mt-0.5">{sub}</p>}
     </div>
   );
@@ -107,10 +105,12 @@ export default function DashboardPage() {
   }, [router]);
 
   // App state
-  const [activePage, setActivePage] = useState<SidebarPage>("dashboard");
-  const [activeTab, setActiveTab]   = useState<ActiveTab>("map");
-  const [viewMode, setViewMode]     = useState<MapViewMode>("heatmap");
-  const [filters, setFilters]       = useState<FilterState>(DEFAULT_FILTERS);
+  const [activePage, setActivePage]         = useState<SidebarPage>("dashboard");
+  const [activeTab, setActiveTab]           = useState<ActiveTab>("map");
+  const [viewMode, setViewMode]             = useState<MapViewMode>("heatmap");
+  const [filters, setFilters]               = useState<FilterState>(DEFAULT_FILTERS);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   // Derived data — re-filter only when filters change
   const filtered = useMemo(
@@ -144,7 +144,7 @@ export default function DashboardPage() {
   const mediumCount = filtered.filter((i) => getRiskLevel(i.risk) === "medium").length;
   const overallAvg  = avgRisk(filtered);
 
-  // ── Recent alerts list (top 5 high/medium by most recent) ────────────────
+  // ── Recent alerts list (top 5 by most recent) ────────────────────────────
 
   const recentAlerts = [...filtered]
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
@@ -152,9 +152,9 @@ export default function DashboardPage() {
     .map((inc) => ({
       id:          inc.id,
       zone:        inc.zone,
-      description: `${TYPE_LABELS[inc.type]} detected — Source: ${SOURCE_LABELS[inc.source]}`,
+      description: `${TYPE_LABELS[inc.type]} — ${SOURCE_LABELS[inc.source]}`,
       severity:    getRiskLevel(inc.risk) as "high" | "medium" | "low",
-      time:        new Date(inc.timestamp).toLocaleString("en-MX", {
+      time:        new Date(inc.timestamp).toLocaleString("es-MX", {
                      month: "short", day: "numeric",
                      hour: "2-digit", minute: "2-digit",
                    }),
@@ -190,17 +190,24 @@ export default function DashboardPage() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
-      <Sidebar active={activePage} onNavigate={setActivePage} onLogout={handleLogout} />
+      <Sidebar
+        active={activePage}
+        onNavigate={setActivePage}
+        onLogout={handleLogout}
+        mobileOpen={mobileSidebarOpen}
+        onMobileClose={() => setMobileSidebarOpen(false)}
+      />
 
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
         <Topbar
           title={PAGE_TITLES[activePage]}
           subtitle={activePage === "dashboard" ? "Inteligencia de riesgo en tiempo real" : undefined}
           onLogout={handleLogout}
           alertCount={highCount}
+          onMenuToggle={() => setMobileSidebarOpen(true)}
         />
 
-        <main className="flex-1 overflow-y-auto p-5">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-5">
           <AnimatePresence mode="wait">
             <motion.div
               key={activePage}
@@ -213,10 +220,10 @@ export default function DashboardPage() {
 
               {/* ── Dashboard / Map page ─────────────────────────────────── */}
               {(activePage === "dashboard" || activePage === "map") && (
-                <div className="flex flex-col gap-5 h-full">
+                <div className="flex flex-col gap-4 sm:gap-5 h-full">
 
                   {/* Stat bar */}
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-4">
                     <StatCard
                       label="Total de Incidentes"
                       value={filtered.length}
@@ -244,7 +251,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Tab + view toggle bar */}
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center gap-2">
                     <div className="flex rounded-xl border border-slate-200 bg-white p-1 gap-1 shadow-sm">
                       {([["map", Map, "Vista de Mapa"], ["analytics", BarChart3, "Analítica"]] as const).map(
                         ([id, Icon, label]) => (
@@ -265,24 +272,35 @@ export default function DashboardPage() {
                     </div>
 
                     {activeTab === "map" && (
-                      <div className="flex rounded-xl border border-slate-200 bg-white p-1 gap-1 shadow-sm">
-                        {([["heatmap", Layers2, "Mapa de Calor"], ["markers", CircleDot, "Marcadores"]] as const).map(
-                          ([id, Icon, label]) => (
-                            <button
-                              key={id}
-                              onClick={() => setViewMode(id)}
-                              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-                                viewMode === id
-                                  ? "bg-slate-800 text-white shadow-sm"
-                                  : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
-                              }`}
-                            >
-                              <Icon className="h-3.5 w-3.5" />
-                              {label}
-                            </button>
-                          )
-                        )}
-                      </div>
+                      <>
+                        <div className="flex rounded-xl border border-slate-200 bg-white p-1 gap-1 shadow-sm">
+                          {([["heatmap", Layers2, "Mapa de Calor"], ["markers", CircleDot, "Marcadores"]] as const).map(
+                            ([id, Icon, label]) => (
+                              <button
+                                key={id}
+                                onClick={() => setViewMode(id)}
+                                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                                  viewMode === id
+                                    ? "bg-slate-800 text-white shadow-sm"
+                                    : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
+                                }`}
+                              >
+                                <Icon className="h-3.5 w-3.5" />
+                                {label}
+                              </button>
+                            )
+                          )}
+                        </div>
+
+                        {/* Mobile filters toggle */}
+                        <button
+                          onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+                          className="lg:hidden flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-slate-50 transition-all"
+                        >
+                          <SlidersHorizontal className="h-3.5 w-3.5" />
+                          Filtros
+                        </button>
+                      </>
                     )}
                   </div>
 
@@ -295,11 +313,17 @@ export default function DashboardPage() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="flex gap-4 flex-1 min-h-0"
-                        style={{ minHeight: 520 }}
+                        className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0"
+                        style={{ minHeight: 400 }}
                       >
-                        {/* Filters sidebar */}
-                        <div className="w-52 shrink-0 rounded-2xl border border-slate-100 bg-white shadow-card overflow-hidden">
+                        {/* Filters — desktop: sidebar; mobile: collapsible panel */}
+                        <div className={`lg:w-52 lg:shrink-0 rounded-2xl border border-slate-100 bg-white shadow-card overflow-hidden ${mobileFiltersOpen ? "block" : "hidden lg:block"}`}>
+                          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 lg:hidden">
+                            <span className="text-xs font-semibold text-slate-700">Filtros</span>
+                            <button onClick={() => setMobileFiltersOpen(false)} className="p-1 rounded-lg text-slate-400 hover:bg-slate-100">
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
                           <MapFilters
                             filters={filters}
                             onChange={setFilters}
@@ -308,7 +332,7 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Map */}
-                        <div className="flex-1 min-w-0 rounded-2xl border border-slate-100 shadow-card overflow-hidden">
+                        <div className="flex-1 min-w-0 rounded-2xl border border-slate-100 shadow-card overflow-hidden h-[360px] lg:h-auto">
                           <DashboardMap
                             incidents={filtered}
                             viewMode={viewMode}
@@ -317,7 +341,7 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Right panels */}
-                        <div className="w-64 shrink-0 flex flex-col gap-4 overflow-y-auto">
+                        <div className="lg:w-64 lg:shrink-0 flex flex-col gap-4 lg:overflow-y-auto">
                           {/* Alerts */}
                           <div className="rounded-2xl border border-slate-100 bg-white shadow-card p-4">
                             <div className="flex items-center justify-between mb-3">
@@ -435,17 +459,17 @@ export default function DashboardPage() {
                                   key={sig.label}
                                   className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/50 px-2.5 py-2"
                                 >
-                                  <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-2 min-w-0">
                                     <div
-                                      className={`flex h-5 w-5 items-center justify-center rounded-md ${
+                                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md ${
                                         sig.elevated ? "bg-amber-100 text-amber-600" : "bg-slate-100 text-slate-500"
                                       }`}
                                     >
                                       <Activity className="h-2.5 w-2.5" />
                                     </div>
-                                    <span className="text-[11px] font-medium text-slate-700">{sig.label}</span>
+                                    <span className="text-[11px] font-medium text-slate-700 truncate">{sig.label}</span>
                                   </div>
-                                  <div className="flex items-center gap-1.5">
+                                  <div className="flex items-center gap-1.5 shrink-0 ml-2">
                                     <span className="text-[11px] font-semibold text-slate-700">
                                       {sig.volume.toLocaleString()}
                                     </span>

@@ -36,9 +36,9 @@ export default function Header() {
             : "bg-transparent"
         )}
       >
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-8">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Logo */}
-          <a href="#" className="flex items-center gap-2.5 group">
+          <a href="#" className="flex items-center gap-2.5 group shrink-0">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-600 shadow-md group-hover:bg-brand-700 transition-colors">
               <Layers className="h-4 w-4 text-white" />
             </div>
@@ -105,8 +105,15 @@ export default function Header() {
                   {link.label}
                 </a>
               ))}
-              <div className="pt-2 border-t border-slate-100 mt-2">
-                <Button variant="primary" className="w-full">
+              <div className="pt-2 border-t border-slate-100 mt-2 flex flex-col gap-2">
+                <a
+                  href="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="px-4 py-3 text-sm font-medium text-slate-700 rounded-xl hover:bg-slate-50 transition-colors text-center"
+                >
+                  Iniciar Sesión
+                </a>
+                <Button variant="primary" className="w-full justify-center">
                   Solicitar Demo
                 </Button>
               </div>

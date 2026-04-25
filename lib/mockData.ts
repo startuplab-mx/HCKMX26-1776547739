@@ -156,27 +156,27 @@ export const overallRiskScore = 67;
 
 export const platformFeatures = [
   {
-    id: "crime-heatmaps",
+    id: "ingestion",
     icon: "Map",
-    title: "Mapas de Calor de Incidentes",
+    title: "Ingesta Multi-Fuente",
     description:
-      "Visualiza la densidad de incidentes en territorios con agrupamiento geoespacial en tiempo real y tendencias temporales.",
+      "Layers Core conecta fuentes gubernamentales, OSINT, SESNSP, IOCs, señales digitales y reportes validados en un pipeline unificado.",
     color: "blue",
   },
   {
-    id: "digital-threat",
+    id: "validation",
     icon: "Shield",
-    title: "Inteligencia de Amenazas Digitales",
+    title: "Validación y Normalización",
     description:
-      "Monitorea señales del dark web, sentimiento social y patrones de comportamiento inauténtico coordinado.",
+      "Clasifica, normaliza, deduplica y valida información en tiempo real para garantizar inteligencia confiable y libre de ruido.",
     color: "purple",
   },
   {
     id: "risk-scoring",
     icon: "BarChart3",
-    title: "Motor de Puntaje de Riesgo",
+    title: "Puntajes de Riesgo Dinámicos",
     description:
-      "Puntajes compuestos dinámicos que combinan líneas base históricas, incidentes en vivo y modelos predictivos de IA.",
+      "Puntajes compuestos que combinan líneas base históricas, señales en vivo e IOCs para reflejar el riesgo real en cada momento.",
     color: "indigo",
   },
   {
@@ -184,23 +184,23 @@ export const platformFeatures = [
     icon: "TrendingUp",
     title: "Detección de Tendencias",
     description:
-      "Detección automática de patrones emergentes, anomalías estacionales y desviaciones estadísticamente significativas.",
+      "Identificación automática de patrones emergentes, correlaciones entre fuentes y desviaciones estadísticamente relevantes.",
     color: "cyan",
   },
   {
     id: "osint",
     icon: "Search",
-    title: "Monitoreo OSINT",
+    title: "OSINT e Inteligencia Abierta",
     description:
-      "Ingesta y correlación continua de inteligencia de fuentes abiertas: noticias, redes sociales y datos públicos.",
+      "Ingesta y correlación continua desde datos abiertos, noticias, redes sociales, registros públicos y plataformas especializadas.",
     color: "teal",
   },
   {
     id: "reports",
     icon: "FileText",
-    title: "Informes Ejecutivos",
+    title: "Reportes Accionables",
     description:
-      "Briefings generados automáticamente con hallazgos clave, resúmenes de riesgo y acciones recomendadas para liderazgo.",
+      "Briefings generados automáticamente con alertas priorizadas, resúmenes de riesgo y recomendaciones para cada tipo de partner.",
     color: "violet",
   },
 ];
@@ -208,37 +208,37 @@ export const platformFeatures = [
 export const howItWorksSteps = [
   {
     step: "01",
-    title: "Ingestar Datos",
+    title: "Ingestar Fuentes",
     description:
-      "Conecta fuentes estructuradas y no estructuradas: reportes de incidentes, señales sociales, feeds OSINT, datos de sensores y registros históricos.",
+      "Layers Core conecta fuentes gubernamentales, OSINT, IOCs, señales digitales, registros públicos y reportes validados en un pipeline unificado.",
     icon: "Database",
   },
   {
     step: "02",
-    title: "Normalizar y Enriquecer",
+    title: "Validar y Normalizar",
     description:
-      "Estandariza, deduplica y enriquece los datos con contexto geoespacial, resolución de entidades y etiquetado temporal.",
+      "Clasifica, deduplica y valida la información con contexto geoespacial, resolución de entidades y etiquetado temporal para eliminar ruido.",
     icon: "Layers",
   },
   {
     step: "03",
-    title: "Detectar Patrones",
+    title: "Correlacionar y Detectar",
     description:
-      "Aplica modelos de ML para detección de anomalías, agrupamiento y reconocimiento de patrones de comportamiento en todas las fuentes.",
+      "Aplica modelos de ML para detectar anomalías, correlaciones entre fuentes y patrones de comportamiento relevantes para cada caso de uso.",
     icon: "Cpu",
   },
   {
     step: "04",
     title: "Generar Inteligencia",
     description:
-      "Produce puntajes de riesgo dinámicos, evaluaciones de amenazas y pronósticos predictivos validados por analistas humanos.",
+      "Produce puntajes de riesgo dinámicos, alertas tempranas y tendencias validadas, con trazabilidad completa desde la fuente hasta la salida.",
     icon: "BrainCircuit",
   },
   {
     step: "05",
-    title: "Entregar Alertas e Informes",
+    title: "Entregar al Partner",
     description:
-      "Envía alertas en tiempo real, briefings ejecutivos e información del panel a los equipos correctos en el momento oportuno.",
+      "Distribuye alertas en tiempo real, reportes accionables y dashboards personalizados a cada institución, partner o equipo de inteligencia.",
     icon: "Bell",
   },
 ];
@@ -246,10 +246,10 @@ export const howItWorksSteps = [
 export const useCases = [
   {
     icon: "Building2",
-    title: "Gobiernos Municipales",
+    title: "Instituciones y Gobierno",
     description:
-      "Dota a los líderes municipales y agencias de seguridad pública con visibilidad del riesgo territorial e inteligencia de alerta temprana.",
-    tags: ["Planeación Urbana", "Seguridad Pública", "Respuesta a Emergencias"],
+      "Dota a procuradurías, fiscalías y agencias gubernamentales con visibilidad del riesgo territorial, inteligencia institucional y alertas tempranas validadas.",
+    tags: ["Procuradurías", "Inteligencia Institucional", "Respuesta a Emergencias"],
   },
   {
     icon: "Briefcase",
@@ -278,6 +278,13 @@ export const useCases = [
     description:
       "Conciencia situacional en tiempo real e inteligencia de asignación de recursos durante incidentes activos y crisis.",
     tags: ["Conciencia Situacional", "Asignación de Recursos", "Coordinación de Crisis"],
+  },
+  {
+    icon: "Shield",
+    title: "Layers Family",
+    description:
+      "Solución de control parental e inteligencia preventiva que utiliza Layers Core para ingerir IOCs, señales digitales y datos contextuales, clasificarlos en tiempo real y detectar patrones de riesgo asociados a exposición digital, contacto sospechoso, manipulación o amenazas emergentes.",
+    tags: ["Control Parental", "Protección Digital", "Clasificación en Tiempo Real", "Alertas Preventivas"],
   },
 ];
 
@@ -435,30 +442,30 @@ export const responsibleAIPrinciples = [
     icon: "UserCheck",
     title: "Humano en el Ciclo",
     description:
-      "Cada puntaje y alerta generado por IA está sujeto a revisión analítica antes de tomar cualquier decisión operativa.",
+      "Cada puntaje y alerta generado por Layers Core está sujeto a revisión analítica antes de derivar en cualquier decisión operativa o institucional.",
   },
   {
     icon: "Lock",
-    title: "Gestión de Datos Orientada a la Privacidad",
+    title: "Privacidad desde el Diseño",
     description:
-      "La minimización de datos, la limitación de propósito y controles de acceso estrictos se aplican en cada capa de la plataforma.",
+      "Minimización de datos, limitación de propósito y controles de acceso estrictos aplicados en cada capa del pipeline de inteligencia.",
   },
   {
     icon: "ShieldOff",
     title: "Sin Acusaciones Automatizadas",
     description:
-      "La plataforma expone patrones y probabilidades — nunca genera acusaciones automatizadas contra individuos.",
+      "La plataforma expone patrones, correlaciones y probabilidades — nunca genera señalamientos automatizados contra personas o entidades.",
   },
   {
     icon: "GitBranch",
-    title: "Auditabilidad y Trazabilidad",
+    title: "Trazabilidad Completa",
     description:
-      "Seguimiento completo de la procedencia desde los datos brutos hasta la salida de decisiones, con registros de auditoría inmutables.",
+      "Seguimiento de procedencia desde cada fuente ingestada hasta la salida de inteligencia, con registros de auditoría inmutables por acción.",
   },
   {
     icon: "Scale",
     title: "Monitoreo de Sesgos",
     description:
-      "Se ejecutan métricas continuas de equidad y verificaciones de paridad demográfica en todos los modelos de puntuación.",
+      "Métricas continuas de equidad y verificaciones de paridad aplicadas sobre todos los modelos de clasificación y puntaje del sistema.",
   },
 ];

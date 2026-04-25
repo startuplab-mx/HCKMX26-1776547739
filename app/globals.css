@@ -18,6 +18,8 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 body {
@@ -26,6 +28,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI",
     Roboto, sans-serif;
   overflow-x: hidden;
+  max-width: 100vw;
 }
 
 /* Glass card utility */

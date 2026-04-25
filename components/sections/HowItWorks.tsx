@@ -35,16 +35,16 @@ export default function HowItWorks() {
             transition={{ duration: 0.5 }}
             className="mb-4"
           >
-            <SectionLabel>Cómo Funciona</SectionLabel>
+            <SectionLabel>Cómo Funciona Layers Core</SectionLabel>
           </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-4xl font-bold tracking-tight text-slate-900 mb-4"
+            className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 mb-4"
           >
-            De datos brutos a inteligencia accionable
+            De señales fragmentadas a inteligencia confiable
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 16 }}
@@ -53,8 +53,8 @@ export default function HowItWorks() {
             transition={{ duration: 0.5, delay: 0.15 }}
             className="text-lg text-slate-500 leading-relaxed"
           >
-            Un pipeline de cinco etapas que transforma continuamente señales
-            fragmentadas en inteligencia de riesgo clara y confiable.
+            El pipeline propietario de Layers Core ingesta, valida, correlaciona
+            y distribuye inteligencia de riesgo a cada partner o institución.
           </motion.p>
         </div>
 
@@ -83,7 +83,7 @@ export default function HowItWorks() {
                     className={`flex-1 ${isEven ? "lg:text-right" : "lg:text-left"}`}
                   >
                     <div
-                      className={`inline-block max-w-md rounded-2xl border border-slate-100 bg-white p-6 shadow-card hover:shadow-card-hover transition-all group ${
+                      className={`w-full lg:inline-block lg:max-w-md rounded-2xl border border-slate-100 bg-white p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all group ${
                         isEven ? "lg:ml-auto" : ""
                       }`}
                     >
