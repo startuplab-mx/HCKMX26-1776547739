@@ -1,0 +1,203 @@
+/* Mapbox GL JS — must come before Tailwind so Tailwind can override */
+@import "mapbox-gl/dist/mapbox-gl.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 15, 23, 42;
+  --background-start-rgb: 248, 250, 252;
+  --background-end-rgb: 255, 255, 255;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI",
+    Roboto, sans-serif;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Glass card utility */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.glass-subtle {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #4c51eb 0%, #6172f7 50%, #8098fb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Noise texture overlay */
+.noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Section spacing */
+.section-padding {
+  @apply py-24 md:py-32;
+}
+
+/* Smooth transitions on all interactive elements */
+a,
+button {
+  transition: all 0.2s ease;
+}
+
+/* ── Layers Guard live-event pulse ring ──────────────────────────────────── */
+
+@keyframes guard-pulse {
+  0%   { transform: scale(1);   opacity: 0.85; }
+  100% { transform: scale(4.5); opacity: 0;    }
+}
+
+.guard-pulse-ring {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #7c3aed;
+  background: rgba(124, 58, 237, 0.25);
+  animation: guard-pulse 1.6s ease-out infinite;
+}
+
+/* ── Guard expand animation — new critical event impact ─────────────────── */
+
+@keyframes guard-expand {
+  0%   { transform: scale(0.18); opacity: 0.90; }
+  100% { transform: scale(1);    opacity: 0;    }
+}
+
+.guard-expand-ring {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: transparent;
+  animation: guard-expand 2s cubic-bezier(0.22, 0.8, 0.28, 1) 3;
+  pointer-events: none;
+}
+
+.guard-signal-label {
+  position: absolute;
+  bottom: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+  pointer-events: none;
+  text-transform: uppercase;
+}
+
+/* ── SOC notification red glow ───────────────────────────────────────────── */
+
+@keyframes soc-glow {
+  0%, 100% { box-shadow: 0 0 0   0   rgba(220, 38, 38, 0.0);  }
+  40%      { box-shadow: 0 0 22px 6px rgba(220, 38, 38, 0.50); }
+}
+
+.soc-alert-glow {
+  animation: soc-glow 1.4s ease-in-out 3;
+}
+
+/* ── Leaflet overrides — keeps the map on-brand ──────────────────────────── */
+
+/* Shrink the attribution to not compete visually */
+.leaflet-control-attribution {
+  font-size: 8px !important;
+  background: rgba(255, 255, 255, 0.55) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 6px 0 0 0 !important;
+  padding: 2px 6px !important;
+  color: #94a3b8 !important;
+}
+.leaflet-control-attribution a {
+  color: #6172f7 !important;
+}
+
+/* Popup — clean white card */
+.leaflet-popup-content-wrapper {
+  border-radius: 14px !important;
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.10) !important;
+  border: 1px solid #f1f5f9 !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+.leaflet-popup-content {
+  margin: 12px 14px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif !important;
+}
+.leaflet-popup-tip-container {
+  margin-top: -1px;
+}
+.leaflet-popup-tip {
+  box-shadow: none !important;
+}
+
+/* Close button */
+.leaflet-popup-close-button {
+  color: #94a3b8 !important;
+  font-size: 16px !important;
+  padding: 4px 6px !important;
+}
+.leaflet-popup-close-button:hover {
+  color: #475569 !important;
+}
+
+/* Ensure the map container fills its parent fully */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  font-family: inherit;
+}
