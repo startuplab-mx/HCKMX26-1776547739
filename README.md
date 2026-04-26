@@ -4,7 +4,7 @@
   <img src="Images/logo.png" alt="Logo Layers" width="180"/>
 </p>
 
-<p align="center"><em>"Aquí también te haces nombre."</em></p>
+<p align="center"><em>"Una alternativa al reclutamiento"</em></p>
 
 ---
 
@@ -49,6 +49,11 @@
 En México, el reclutamiento de adolescentes por parte del crimen organizado se ha convertido en un fenómeno sistemático. Los cárteles ofrecen lo que muchos otros actores no logran: **identidad, dinero inmediato, pertenencia, estatus y mentores presentes**. La mayoría de los programas de prevención compiten contra el dinero del cártel y pierden, porque atacan el síntoma (drogas, violencia) en lugar de la causa (la sensación de no importar).
 
 **Jopi compite con el cártel en su propio terreno.** No enseña a decir "no". Ofrece algo mejor:
+
+<p align="center">
+  <img src="Images/jopi.png" alt="Logo Layers" width="180"/>
+</p>
+
 
 - **Identidad** — Insignias visibles y compartibles que dan estatus, no diplomas que dan vergüenza.
 - **Dinero** — Pagos reales por cursos completados esta semana, no al graduarse en cinco años.
