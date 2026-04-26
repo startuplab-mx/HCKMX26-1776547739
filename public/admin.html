@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jopi Admin | Control de Misiones</title>
+    <style>
+        :root {
+            --primary: #8B88FF;
+            --secondary: #00FFFF;
+            --bg: #0A081A;
+            --card: #1A1635;
+            --text: #FFFFFF;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg); color: var(--text);
+            margin: 0; padding: 40px; display: flex; flex-direction: column; align-items: center;
+        }
+        .card {
+            background-color: var(--card); padding: 30px; border-radius: 24px;
+            width: 100%; max-width: 600px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        h1 { color: var(--primary); margin: 0; font-weight: 900; }
+        .subtitle { color: #888; margin-bottom: 30px; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #CCC; font-size: 13px; }
+        input, select, textarea {
+            width: 100%; padding: 14px; margin-top: 8px;
+            background: #252047; border: 1px solid #3A336B;
+            border-radius: 12px; color: white; font-size: 15px; box-sizing: border-box;
+        }
+        .new-course-box {
+            background: rgba(139, 136, 255, 0.05); padding: 20px;
+            border-radius: 16px; border: 1px dashed var(--primary);
+            margin-top: 20px; display: none;
+        }
+        button {
+            margin-top: 30px; width: 100%; padding: 16px;
+            background-color: var(--primary); color: white;
+            border: none; border-radius: 14px; font-size: 16px; font-weight: 800;
+            cursor: pointer; transition: all 0.2s;
+        }
+        button:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .status { margin-top: 20px; text-align: center; font-weight: bold; padding: 15px; border-radius: 12px; display: none; }
+        .success { background: rgba(76, 217, 100, 0.1); color: #4CD964; display: block; }
+        .error { background: rgba(255, 59, 48, 0.1); color: #FF3B30; display: block; }
+    </style>
+</head>
+<body>
+
+    <h1>🚀 Director de Vuelo</h1>
+    <p class="subtitle">Gestiona la galaxia de aprendizaje Jopi</p>
+
+    <div class="card">
+        <form id="missionForm">
+            <!-- SELECCIÓN DE CURSO -->
+            <label for="course_select">¿A qué curso pertenece esta lección?</label>
+            <select id="course_select" required>
+                <option value="" disabled selected>Cargando cursos...</option>
+                <option value="new">+ CREAR NUEVO CURSO</option>
+            </select>
+
+            <!-- BLOQUE NUEVO CURSO (OCULTO POR DEFECTO) -->
+            <div id="newCourseSection" class="new-course-box">
+                <h3 style="margin-top:0; color: var(--primary)">Nuevo Curso</h3>
+                <label>Nombre del Curso</label>
+                <input type="text" id="new_course_title" placeholder="Ej. Magia con Swift">
+                
+                <label>Icono (SF Symbol)</label>
+                <input type="text" id="new_course_icon" placeholder="Ej. star.fill">
+                
+                <label>Color Hexadecimal</label>
+                <input type="color" id="new_course_color" value="#8B88FF" style="height: 50px; padding: 5px;">
+            </div>
+
+            <!-- DETALLES LECCIÓN -->
+            <div style="margin-top: 20px; border-top: 1px solid #3A336B; padding-top: 10px;">
+                <label for="title">Título de la Lección</label>
+                <input type="text" id="title" placeholder="Ej. ¿Cómo flotar en el código?" required>
+
+                <label for="description">Descripción (Pista para el niño)</label>
+                <textarea id="description" rows="2" placeholder="Explica qué aprenderá hoy..."></textarea>
+
+                <label for="order_index">Orden en el curso</label>
+                <input type="number" id="order_index" value="1" required>
+
+                <label for="video">Archivo de Video</label>
+                <input type="file" id="video" accept="video/*" required>
+            </div>
+
+            <button type="submit" id="submitBtn">Lanzar Misión a la App 🚀</button>
+            <div id="status" class="status"></div>
+        </form>
+    </div>
+
+    <script>
+        const courseSelect = document.getElementById('course_select');
+        const newCourseSection = document.getElementById('newCourseSection');
+
+        // 1. Cargar cursos al iniciar
+        async function loadCourses() {
+            try {
+                const res = await fetch('/courses');
+                const courses = await res.json();
+                
+                // Limpiar (excepto la opción de 'Nuevo')
+                courseSelect.innerHTML = '<option value="" disabled selected>Selecciona un curso</option>' + 
+                                       '<option value="new">+ 🆕 CREAR NUEVO CURSO</option>';
+                
+                courses.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = `🪐 ${c.title}`;
+                    courseSelect.appendChild(opt);
+                });
+            } catch (e) {
+                console.error("Error cargando cursos:", e);
+            }
+        }
+
+        // 2. Mostrar/Ocultar campos de nuevo curso
+        courseSelect.addEventListener('change', () => {
+            newCourseSection.style.display = courseSelect.value === 'new' ? 'block' : 'none';
+        });
+
+        // 3. Manejar Envío
+        document.getElementById('missionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const status = document.getElementById('status');
+            
+            btn.disabled = true;
+            btn.innerText = "Procesando lanzamiento... ⏳";
+            status.style.display = "none";
+
+            try {
+                let courseId = courseSelect.value;
+
+                // A. Si es un curso nuevo, crearlo primero
+                if (courseId === 'new') {
+                    const cRes = await fetch('/admin/create-course', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            title: document.getElementById('new_course_title').value,
+                            icon: document.getElementById('new_course_icon').value || 'book.fill',
+                            color_hex: document.getElementById('new_course_color').value
+                        })
+                    });
+                    const newCourse = await cRes.json();
+                    courseId = newCourse.id;
+                }
+
+                // B. Subir el video a ese curso
+                const formData = new FormData();
+                formData.append('course_id', courseId);
+                formData.append('title', document.getElementById('title').value);
+                formData.append('description', document.getElementById('description').value);
+                formData.append('order_index', document.getElementById('order_index').value);
+                formData.append('video', document.getElementById('video').files[0]);
+
+                const res = await fetch('/admin/upload-tutorial', { method: 'POST', body: formData });
+                if (!res.ok) throw new Error("Error subiendo el video");
+
+                status.innerText = "✅ ¡Misión lanzada con éxito a la galaxia Jopi!";
+                status.className = "status success";
+                document.getElementById('missionForm').reset();
+                newCourseSection.style.display = 'none';
+                loadCourses(); // Recargar lista
+
+            } catch (err) {
+                status.innerText = "❌ Error: " + err.message;
+                status.className = "status error";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Lanzar Misión a la App 🚀";
+            }
+        });
+
+        loadCourses();
+    </script>
+</body>
+</html>
