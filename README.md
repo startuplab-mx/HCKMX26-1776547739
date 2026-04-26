@@ -1,7 +1,7 @@
 # HCKMX26-1776547739
 
 <p align="center">
-  <img src="images/logo.png" alt="Logo Layers" width="180"/>
+  <img src="Images/logo.png" alt="Logo Layers" width="180"/>
 </p>
 
 <p align="center"><em>"Aquí también te haces nombre."</em></p>
