@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import type { HeatmapPoint } from "@/lib/types/heatmap";
 
 const Mapbox3DVolumeMap = dynamic(
   () => import("./Mapbox3DVolumeMap"),
@@ -17,8 +18,6 @@ const Mapbox3DVolumeMap = dynamic(
   }
 );
 
-// The inner Mapbox3DVolumeMap controls its own height (600px fixed).
-// This wrapper just passes through without forcing conflicting dimensions.
-export default function Mapbox3DVolumeMapWrapper() {
-  return <Mapbox3DVolumeMap />;
+export default function Mapbox3DVolumeMapWrapper({ points }: { points?: HeatmapPoint[] }) {
+  return <Mapbox3DVolumeMap points={points} />;
 }

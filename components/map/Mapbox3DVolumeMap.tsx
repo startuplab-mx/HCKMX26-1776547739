@@ -175,45 +175,48 @@ function NoTokenState() {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function Mapbox3DVolumeMap() {
-  const containerRef  = useRef<HTMLDivElement>(null);
-  const mapRef        = useRef<any>(null);
+interface Props {
+  points?: HeatmapPoint[];
+}
 
-  const [mapError,     setMapError]     = useState<string | null>(null);
-  const [dataLoading,  setDataLoading]  = useState(true);
-  const [total,        setTotal]        = useState(0);
-  const [cellCount,    setCellCount]    = useState(0);
+export default function Mapbox3DVolumeMap({ points: externalPoints }: Props) {
+  const containerRef        = useRef<HTMLDivElement>(null);
+  const mapRef              = useRef<any>(null);
+  const standaloneLoadedRef = useRef(false);
 
-  // Read token inside effect so it's never stale from module-level capture
+  const [mapError,    setMapError]    = useState<string | null>(null);
+  const [dataLoading, setDataLoading] = useState(true);
+  const [mapLoaded,   setMapLoaded]   = useState(false);
+  const [total,       setTotal]       = useState(0);
+  const [cellCount,   setCellCount]   = useState(0);
+
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
 
+  // ── Applies a point array to the grid source ────────────────────────────────
+  function applyPoints(pts: HeatmapPoint[]) {
+    const map = mapRef.current;
+    if (!map) return;
+    const src = map.getSource("grid");
+    if (!src) return;
+    const cells = buildGrid(pts);
+    src.setData(toGeoJSON(cells));
+    setTotal(pts.length);
+    setCellCount(cells.length);
+    setDataLoading(false);
+  }
+
+  // ── Map init (runs once) ────────────────────────────────────────────────────
   useEffect(() => {
-    console.log("[Mapbox3D] useEffect start");
-    console.log("[Mapbox3D] token exists:", !!token);
-
-    if (!token) {
-      console.error("[Mapbox3D] No token — aborting");
-      return;
-    }
-
+    if (!token) return;
     const el = containerRef.current;
-    if (!el) {
-      console.error("[Mapbox3D] containerRef.current is null");
-      return;
-    }
-
-    console.log("[Mapbox3D] container:", el.clientWidth, "x", el.clientHeight);
+    if (!el) return;
 
     let cancelled = false;
 
-    // ── Step 1: import mapbox-gl then immediately init the map ────────────────
     import("mapbox-gl")
       .then((mod) => {
         const mapboxgl: any = mod.default ?? mod;
-
         if (cancelled) return;
-
-        console.log("[Mapbox3D] mapboxgl.Map type:", typeof mapboxgl.Map);
 
         mapboxgl.accessToken = token;
 
@@ -229,9 +232,7 @@ export default function Mapbox3DVolumeMap() {
         });
 
         mapRef.current = map;
-        console.log("[Mapbox3D] Map instance created");
 
-        // Navigation control — visible UI proof the map is mounting
         map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), "bottom-right");
 
         map.on("error", (e: any) => {
@@ -240,99 +241,63 @@ export default function Mapbox3DVolumeMap() {
           setMapError(msg);
         });
 
-        map.on("style.load", () => {
-          console.log("[Mapbox3D] style.load fired");
-        });
-
-        // ── Step 2: fetch data only after map tiles are ready ─────────────────
-        map.on("load", async () => {
-          console.log("[Mapbox3D] map.on('load') fired");
+        map.on("load", () => {
           if (cancelled) return;
-
           map.resize();
-          const canvas = map.getCanvas();
-          console.log("[Mapbox3D] canvas after resize:", canvas.width, "x", canvas.height);
 
-          try {
-            const r = await fetch("/api/heatmap");
-            if (!r.ok) throw new Error(`HTTP ${r.status} — ${r.statusText}`);
-            const data: HeatmapResponse = await r.json();
-            if (cancelled) return;
+          // Add empty source + extrusion layer — data populated by data effect
+          map.addSource("grid", {
+            type: "geojson",
+            data: { type: "FeatureCollection", features: [] },
+          });
 
-            const points = data.points ?? [];
-            const cells  = buildGrid(points);
-            const geo    = toGeoJSON(cells);
+          map.addLayer({
+            id:     "grid-extrusion",
+            type:   "fill-extrusion",
+            source: "grid",
+            paint:  {
+              "fill-extrusion-color": [
+                "case",
+                [">", ["get", "guardCount"], 0], "#7c3aed",
+                [">", ["get", "count"],      50], "#dc2626",
+                [">", ["get", "count"],      20], "#f97316",
+                "#facc15",
+              ],
+              "fill-extrusion-height":  ["get", "height"],
+              "fill-extrusion-base":    0,
+              "fill-extrusion-opacity": 0.85,
+            },
+          });
 
-            console.log("[Mapbox3D] points received:", points.length);
-            console.log("[Mapbox3D] cells generated:", cells.length);
-            if (cells[0]) console.log("[Mapbox3D] sample cell:", JSON.stringify(cells[0]));
-
-            setTotal(points.length);
-            setCellCount(cells.length);
-
-            // Add source + extrusion layer
-            map.addSource("grid", { type: "geojson", data: geo });
-
-            map.addLayer({
-              id:     "grid-extrusion",
-              type:   "fill-extrusion",
-              source: "grid",
-              paint:  {
-                "fill-extrusion-color": [
-                  "case",
-                  [">", ["get", "guardCount"], 0], "#7c3aed",
-                  [">", ["get", "count"],      50], "#dc2626",
-                  [">", ["get", "count"],      20], "#f97316",
-                  "#facc15",
-                ],
-                "fill-extrusion-height":  ["get", "height"],
-                "fill-extrusion-base":    0,
-                "fill-extrusion-opacity": 0.85,
-              },
-            });
-
-            console.log("[Mapbox3D] fill-extrusion layer added");
-
-            // Popup on click
-            const popup = new mapboxgl.Popup({ closeButton: true, maxWidth: "260px" });
-
-            map.on("click", "grid-extrusion", (e: any) => {
-              const props = e.features?.[0]?.properties;
-              if (!props) return;
-              popup
-                .setLngLat(e.lngLat)
-                .setHTML(`
-                  <div style="font-family:ui-sans-serif,system-ui,sans-serif;padding:2px 0;background:#1e293b;color:#fff;border-radius:8px;">
-                    <div style="font-size:11px;font-weight:700;margin-bottom:8px;color:#f8fafc;">
-                      Celda&nbsp;${props.lat},&nbsp;${props.lng}
-                    </div>
-                    <table style="width:100%;font-size:11px;border-collapse:collapse;">
-                      <tr><td style="color:#94a3b8;padding:2px 0;">Eventos totales</td>
-                          <td style="color:#fff;font-weight:600;text-align:right;">${props.count}</td></tr>
-                      <tr><td style="color:#94a3b8;padding:2px 0;">Territoriales</td>
-                          <td style="color:#fb923c;font-weight:600;text-align:right;">${props.eventsCount}</td></tr>
-                      <tr><td style="color:#94a3b8;padding:2px 0;">Guard</td>
-                          <td style="color:#a78bfa;font-weight:600;text-align:right;">${props.guardCount}</td></tr>
-                      <tr><td style="color:#94a3b8;padding:2px 0;">Intensidad</td>
-                          <td style="color:#fff;font-weight:600;text-align:right;">${props.totalIntensity}</td></tr>
-                    </table>
+          const popup = new mapboxgl.Popup({ closeButton: true, maxWidth: "260px" });
+          map.on("click", "grid-extrusion", (e: any) => {
+            const props = e.features?.[0]?.properties;
+            if (!props) return;
+            popup
+              .setLngLat(e.lngLat)
+              .setHTML(`
+                <div style="font-family:ui-sans-serif,system-ui,sans-serif;padding:2px 0;background:#1e293b;color:#fff;border-radius:8px;">
+                  <div style="font-size:11px;font-weight:700;margin-bottom:8px;color:#f8fafc;">
+                    Celda&nbsp;${props.lat},&nbsp;${props.lng}
                   </div>
-                `)
-                .addTo(map);
-            });
+                  <table style="width:100%;font-size:11px;border-collapse:collapse;">
+                    <tr><td style="color:#94a3b8;padding:2px 0;">Eventos totales</td>
+                        <td style="color:#fff;font-weight:600;text-align:right;">${props.count}</td></tr>
+                    <tr><td style="color:#94a3b8;padding:2px 0;">Territoriales</td>
+                        <td style="color:#fb923c;font-weight:600;text-align:right;">${props.eventsCount}</td></tr>
+                    <tr><td style="color:#94a3b8;padding:2px 0;">Guard</td>
+                        <td style="color:#a78bfa;font-weight:600;text-align:right;">${props.guardCount}</td></tr>
+                    <tr><td style="color:#94a3b8;padding:2px 0;">Intensidad</td>
+                        <td style="color:#fff;font-weight:600;text-align:right;">${props.totalIntensity}</td></tr>
+                  </table>
+                </div>
+              `)
+              .addTo(map);
+          });
+          map.on("mouseenter", "grid-extrusion", () => { map.getCanvas().style.cursor = "pointer"; });
+          map.on("mouseleave", "grid-extrusion", () => { map.getCanvas().style.cursor = ""; });
 
-            map.on("mouseenter", "grid-extrusion", () => {
-              map.getCanvas().style.cursor = "pointer";
-            });
-            map.on("mouseleave", "grid-extrusion", () => {
-              map.getCanvas().style.cursor = "";
-            });
-
-          } catch (err: any) {
-            console.error("[Mapbox3D] data fetch error:", err);
-          } finally {
-            setDataLoading(false);
-          }
+          setMapLoaded(true);
         });
       })
       .catch((err: any) => {
@@ -347,6 +312,28 @@ export default function Mapbox3DVolumeMap() {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ── Data effect: fires when map is ready or external points change ──────────
+  useEffect(() => {
+    if (!mapLoaded) return;
+
+    if (externalPoints !== undefined) {
+      applyPoints(externalPoints);
+    } else if (!standaloneLoadedRef.current) {
+      standaloneLoadedRef.current = true;
+      fetch("/api/heatmap")
+        .then((r) => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.json() as Promise<HeatmapResponse>;
+        })
+        .then((data) => { applyPoints(data.points ?? []); })
+        .catch((err: any) => {
+          console.error("[Mapbox3D] data fetch error:", err);
+          setDataLoading(false);
+        });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapLoaded, externalPoints]);
 
   // ── Render ────────────────────────────────────────────────────────────────
 

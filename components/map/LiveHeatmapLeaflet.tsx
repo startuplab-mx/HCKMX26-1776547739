@@ -163,38 +163,31 @@ function Overlays({ total, eventCount, guardCount }: { total: number; eventCount
 
 // ── Main export ───────────────────────────────────────────────────────────────
 
-export default function LiveHeatmapLeaflet() {
+interface LiveHeatmapLeafletProps {
+  points?: HeatmapPoint[];
+}
+
+export default function LiveHeatmapLeaflet({ points: externalPoints }: LiveHeatmapLeafletProps) {
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-  const [points, setPoints] = useState<HeatmapPoint[]>([]);
+  const [internalPoints, setInternalPoints] = useState<HeatmapPoint[]>([]);
   const [errMsg, setErrMsg] = useState<string>("");
 
+  // Standalone fetch — only when no external points provided
   useEffect(() => {
+    if (externalPoints !== undefined) {
+      setStatus("ready");
+      return;
+    }
+
     console.log("[LiveHeatmap] component mounted, starting fetch /api/heatmap");
 
     fetch("/api/heatmap")
       .then((r) => {
-        console.log("[LiveHeatmap] fetch response status:", r.status);
         if (!r.ok) throw new Error(`HTTP ${r.status} — ${r.statusText}`);
         return r.json() as Promise<HeatmapResponse>;
       })
       .then((data) => {
-        const total  = data.points?.length ?? 0;
-        const events = data.points?.filter((p) => p.source === "events").length ?? 0;
-        const guard  = data.points?.filter((p) => p.source === "layers_guard").length ?? 0;
-
-        console.log(
-          `[LiveHeatmap] fetch OK — total: ${total}, events: ${events}, layers_guard: ${guard}`
-        );
-
-        // Sanity-check: log first point for coordinate verification
-        if (data.points?.length) {
-          const first = data.points[0];
-          console.log(
-            `[LiveHeatmap] first point sample — source: ${first.source}, lat: ${first.lat}, lng: ${first.lng}, intensity: ${first.intensity}`
-          );
-        }
-
-        setPoints(data.points ?? []);
+        setInternalPoints(data.points ?? []);
         setStatus("ready");
       })
       .catch((err: unknown) => {
@@ -203,17 +196,19 @@ export default function LiveHeatmapLeaflet() {
         setErrMsg(msg);
         setStatus("error");
       });
-  }, []);
+  }, [externalPoints]);
 
+  // Switch to ready immediately when external points arrive
+  useEffect(() => {
+    if (externalPoints !== undefined) setStatus("ready");
+  }, [externalPoints]);
+
+  const points      = externalPoints ?? internalPoints;
   const eventPoints = points.filter((p) => p.source === "events");
   const guardPoints = points.filter((p) => p.source === "layers_guard");
 
   if (status === "loading") return <LoadingState />;
   if (status === "error")   return <ErrorState message={errMsg} />;
-
-  console.log(
-    `[LiveHeatmap] rendering MapContainer — eventPoints: ${eventPoints.length}, guardPoints: ${guardPoints.length}`
-  );
 
   return (
     <div className="absolute inset-0">
@@ -260,6 +255,7 @@ export default function LiveHeatmapLeaflet() {
         eventCount={eventPoints.length}
         guardCount={guardPoints.length}
       />
+
     </div>
   );
 }

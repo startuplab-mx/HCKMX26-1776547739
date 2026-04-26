@@ -1,8 +1,9 @@
 "use client";
 
 import "leaflet/dist/leaflet.css";
-import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
+import { useEffect, useState, useMemo } from "react";
+import L from "leaflet";
+import { MapContainer, TileLayer, CircleMarker, Popup, Marker } from "react-leaflet";
 import type { HeatmapPoint, HeatmapResponse } from "@/lib/types/heatmap";
 
 const MAX_DISPLAY = 1000;
@@ -11,6 +12,15 @@ const SOURCE_COLOR: Record<string, { fill: string; stroke: string }> = {
   events:       { fill: "#f97316", stroke: "#ea580c" },
   layers_guard: { fill: "#7c3aed", stroke: "#5b21b6" },
 };
+
+// ── Pulse icon for newly-arrived guard events ─────────────────────────────────
+
+const PULSE_ICON = L.divIcon({
+  html:      '<div class="guard-pulse-ring"></div>',
+  className: "",
+  iconSize:  [18, 18],
+  iconAnchor:[9, 9],
+});
 
 // ── Loading / error ───────────────────────────────────────────────────────────
 
@@ -42,49 +52,31 @@ function ErrorState({ message }: { message: string }) {
 // ── Overlays ──────────────────────────────────────────────────────────────────
 
 function Overlays({
-  displayed,
-  total,
-  evCount,
-  guardCount,
+  displayed, total, evCount, guardCount,
 }: {
-  displayed:  number;
-  total:      number;
-  evCount:    number;
-  guardCount: number;
+  displayed: number; total: number; evCount: number; guardCount: number;
 }) {
   return (
     <>
-      {/* Counter — top right */}
       <div className="absolute top-3 right-3 z-[1000] bg-white/90 backdrop-blur-md rounded-lg border border-slate-100 shadow-sm px-2.5 py-1.5 flex items-center gap-1.5 pointer-events-none">
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
         <span className="text-[10px] font-semibold text-slate-600">
-          {displayed.toLocaleString()} eventos reales
-          {total > displayed && ` (de ${total.toLocaleString()})`}
+          {displayed.toLocaleString()} eventos reales{total > displayed ? ` (de ${total.toLocaleString()})` : ""}
         </span>
       </div>
-
-      {/* Legend — bottom left */}
       <div className="absolute bottom-3 left-3 z-[1000] bg-white/90 backdrop-blur-md rounded-xl border border-slate-100 shadow-card px-3 py-2.5 pointer-events-none">
-        <p className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 mb-2">
-          Fuente
-        </p>
+        <p className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 mb-2">Fuente</p>
         <div className="flex items-center gap-2 mb-1.5">
           <span className="h-2.5 w-2.5 rounded-full bg-orange-500 shrink-0" />
           <span className="text-[11px] font-medium text-slate-600">Territoriales</span>
-          <span className="text-[10px] tabular-nums font-semibold text-orange-600 ml-auto pl-3">
-            {evCount.toLocaleString()}
-          </span>
+          <span className="text-[10px] tabular-nums font-semibold text-orange-600 ml-auto pl-3">{evCount.toLocaleString()}</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full bg-violet-600 shrink-0" />
           <span className="text-[11px] font-medium text-slate-600">Layers Guard</span>
-          <span className="text-[10px] tabular-nums font-semibold text-violet-600 ml-auto pl-3">
-            {guardCount.toLocaleString()}
-          </span>
+          <span className="text-[10px] tabular-nums font-semibold text-violet-600 ml-auto pl-3">{guardCount.toLocaleString()}</span>
         </div>
       </div>
-
-      {/* Source badge — top left */}
       <div className="absolute top-3 left-3 z-[1000] bg-white/90 backdrop-blur-md rounded-lg border border-slate-100 shadow-sm px-2.5 py-1.5 pointer-events-none">
         <span className="text-[10px] font-semibold text-slate-600">Datos reales · Supabase</span>
       </div>
@@ -94,13 +86,20 @@ function Overlays({
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function RealPointsMap() {
-  const [status,   setStatus]   = useState<"loading" | "ready" | "error">("loading");
-  const [shown,    setShown]    = useState<HeatmapPoint[]>([]);
-  const [total,    setTotal]    = useState(0);
-  const [errMsg,   setErrMsg]   = useState("");
+interface Props {
+  points?:         HeatmapPoint[];
+  recentPointIds?: string[];
+}
 
+export default function RealPointsMap({ points: externalPoints, recentPointIds = [] }: Props) {
+  const [internalPoints, setInternalPoints] = useState<HeatmapPoint[] | null>(null);
+  const [total,          setTotal]          = useState(0);
+  const [errMsg,         setErrMsg]         = useState("");
+
+  // If no external points provided, fetch internally (standalone mode)
   useEffect(() => {
+    if (externalPoints !== undefined) return;
+
     fetch("/api/heatmap")
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status} — ${r.statusText}`);
@@ -109,17 +108,24 @@ export default function RealPointsMap() {
       .then((data) => {
         const all = data.points ?? [];
         setTotal(all.length);
-        setShown(all.slice(0, MAX_DISPLAY));
-        setStatus("ready");
+        setInternalPoints(all);
       })
       .catch((err: unknown) => {
         setErrMsg(err instanceof Error ? err.message : String(err));
-        setStatus("error");
+        setInternalPoints([]);
       });
-  }, []);
+  }, [externalPoints]);
 
-  if (status === "loading") return <LoadingState />;
-  if (status === "error")   return <ErrorState message={errMsg} />;
+  // Determine which points source to use
+  const allPoints  = externalPoints ?? internalPoints;
+  const isLoading  = allPoints === null && !errMsg;
+  const shown      = useMemo(() => (allPoints ?? []).slice(0, MAX_DISPLAY), [allPoints]);
+  const totalCount = externalPoints !== undefined ? (externalPoints?.length ?? 0) : total;
+
+  const recentSet  = useMemo(() => new Set(recentPointIds), [recentPointIds]);
+
+  if (isLoading)  return <LoadingState />;
+  if (errMsg)     return <ErrorState message={errMsg} />;
 
   const evCount    = shown.filter((p) => p.source === "events").length;
   const guardCount = shown.filter((p) => p.source === "layers_guard").length;
@@ -141,67 +147,44 @@ export default function RealPointsMap() {
           maxZoom={20}
         />
 
+        {/* Standard markers */}
         {shown.map((p) => {
           const col = SOURCE_COLOR[p.source] ?? SOURCE_COLOR.events;
           return (
             <CircleMarker
               key={p.id}
               center={[p.lat, p.lng]}
-              radius={5}
-              pathOptions={{
-                fillColor:    col.fill,
-                fillOpacity:  0.75,
-                color:        col.stroke,
-                weight:       1,
-              }}
+              radius={p.source === "layers_guard" ? 6 : 5}
+              pathOptions={{ fillColor: col.fill, fillOpacity: 0.8, color: col.stroke, weight: 1 }}
             >
               <Popup>
                 <div style={{ minWidth: 160 }}>
-                  {p.title && (
-                    <p style={{ fontWeight: 700, fontSize: 12, marginBottom: 6, color: "#1e293b" }}>
-                      {p.title}
-                    </p>
-                  )}
+                  {p.title && <p style={{ fontWeight: 700, fontSize: 12, marginBottom: 6, color: "#1e293b" }}>{p.title}</p>}
                   <table style={{ fontSize: 11, borderCollapse: "collapse", width: "100%" }}>
-                    {p.category && (
-                      <tr>
-                        <td style={{ color: "#94a3b8", paddingRight: 8 }}>Categoría</td>
-                        <td style={{ color: "#334155", fontWeight: 600 }}>{p.category}</td>
-                      </tr>
-                    )}
-                    {p.severity && (
-                      <tr>
-                        <td style={{ color: "#94a3b8", paddingRight: 8 }}>Severidad</td>
-                        <td style={{ color: "#334155", fontWeight: 600 }}>{p.severity}</td>
-                      </tr>
-                    )}
-                    <tr>
-                      <td style={{ color: "#94a3b8", paddingRight: 8 }}>Fuente</td>
+                    {p.category && <tr><td style={{ color: "#94a3b8", paddingRight: 8 }}>Categoría</td><td style={{ color: "#334155", fontWeight: 600 }}>{p.category}</td></tr>}
+                    {p.severity && <tr><td style={{ color: "#94a3b8", paddingRight: 8 }}>Severidad</td><td style={{ color: "#334155", fontWeight: 600 }}>{p.severity}</td></tr>}
+                    <tr><td style={{ color: "#94a3b8", paddingRight: 8 }}>Fuente</td>
                       <td style={{ color: p.source === "layers_guard" ? "#7c3aed" : "#ea580c", fontWeight: 600 }}>
                         {p.source === "layers_guard" ? "Layers Guard" : "Territorial"}
                       </td>
                     </tr>
-                    {p.description && (
-                      <tr>
-                        <td colSpan={2} style={{ color: "#94a3b8", paddingTop: 6, fontSize: 10 }}>
-                          {p.description}
-                        </td>
-                      </tr>
-                    )}
+                    {p.description && <tr><td colSpan={2} style={{ color: "#94a3b8", paddingTop: 6, fontSize: 10 }}>{p.description}</td></tr>}
                   </table>
                 </div>
               </Popup>
             </CircleMarker>
           );
         })}
+
+        {/* Pulse rings for newly-arrived guard events */}
+        {shown
+          .filter((p) => recentSet.has(p.id) && p.source === "layers_guard")
+          .map((p) => (
+            <Marker key={`pulse-${p.id}`} position={[p.lat, p.lng]} icon={PULSE_ICON} />
+          ))}
       </MapContainer>
 
-      <Overlays
-        displayed={shown.length}
-        total={total}
-        evCount={evCount}
-        guardCount={guardCount}
-      />
+      <Overlays displayed={shown.length} total={totalCount} evCount={evCount} guardCount={guardCount} />
     </div>
   );
 }

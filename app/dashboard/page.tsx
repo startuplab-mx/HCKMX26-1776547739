@@ -24,6 +24,7 @@ import {
   TYPE_LABELS,
   SOURCE_LABELS,
 } from "@/lib/mockData";
+import { useHeatmapPolling } from "@/lib/hooks/useHeatmapPolling";
 
 import Sidebar, { type SidebarPage } from "@/components/dashboard/Sidebar";
 import Topbar from "@/components/dashboard/Topbar";
@@ -35,6 +36,7 @@ import SettingsView from "@/components/dashboard/sections/SettingsView";
 import RealPointsMapWrapper from "@/components/map/RealPointsMapWrapper";
 import LiveHeatmapMap from "@/components/map/LiveHeatmapMap";
 import Mapbox3DVolumeMapWrapper from "@/components/map/Mapbox3DVolumeMapWrapper";
+import LiveGuardNotification from "@/components/dashboard/LiveGuardNotification";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -105,6 +107,8 @@ export default function DashboardPage() {
   const [mapView,         setMapView]         = useState<MapView>("points");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
+  const { points, recentPointIds, notifications, status: pollingStatus, dismissNotification } = useHeatmapPolling();
+
   useEffect(() => {
     if (!isAuthenticated()) router.replace("/login");
     else setHydrated(true);
@@ -163,6 +167,9 @@ export default function DashboardPage() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
+      {/* Live toast notifications for new Layers Guard events */}
+      <LiveGuardNotification notifications={notifications} onDismiss={dismissNotification} />
+
       <Sidebar
         active={activePage}
         onNavigate={setActivePage}
@@ -271,12 +278,35 @@ export default function DashboardPage() {
                                 ))}
                               </div>
 
-                              <div className="flex items-center gap-1.5 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-1.5">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                <span className="text-[10px] font-semibold text-emerald-700 whitespace-nowrap">
-                                  Datos reales · Supabase
-                                </span>
-                              </div>
+                              {pollingStatus === "new-signal" ? (
+                                <div className="flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-3 py-1.5">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-violet-500 animate-ping" />
+                                  <span className="text-[10px] font-semibold text-violet-700 whitespace-nowrap">
+                                    Nueva señal detectada
+                                  </span>
+                                </div>
+                              ) : pollingStatus === "polling" ? (
+                                <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-slate-400 animate-pulse" />
+                                  <span className="text-[10px] font-semibold text-slate-500 whitespace-nowrap">
+                                    Revisando…
+                                  </span>
+                                </div>
+                              ) : pollingStatus === "error" ? (
+                                <div className="flex items-center gap-1.5 rounded-xl border border-red-100 bg-red-50 px-3 py-1.5">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                                  <span className="text-[10px] font-semibold text-red-600 whitespace-nowrap">
+                                    Error de conexión
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-1.5 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-1.5">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                  <span className="text-[10px] font-semibold text-emerald-700 whitespace-nowrap">
+                                    {pollingStatus === "loading" ? "Conectando…" : "Monitoreando · cada 5s"}
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -299,7 +329,10 @@ export default function DashboardPage() {
                                   transition={{ duration: 0.2 }}
                                   style={{ position: "relative", width: "100%", height: "100%" }}
                                 >
-                                  <RealPointsMapWrapper />
+                                  <RealPointsMapWrapper
+                                    points={points.length > 0 ? points : undefined}
+                                    recentPointIds={recentPointIds}
+                                  />
                                 </motion.div>
                               )}
                               {mapView === "heatmap" && (
@@ -308,7 +341,7 @@ export default function DashboardPage() {
                                   transition={{ duration: 0.2 }}
                                   style={{ position: "relative", width: "100%", height: "100%" }}
                                 >
-                                  <LiveHeatmapMap />
+                                  <LiveHeatmapMap points={points.length > 0 ? points : undefined} />
                                 </motion.div>
                               )}
                               {mapView === "3d" && (
@@ -316,7 +349,7 @@ export default function DashboardPage() {
                                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                                   transition={{ duration: 0.2 }}
                                 >
-                                  <Mapbox3DVolumeMapWrapper />
+                                  <Mapbox3DVolumeMapWrapper points={points.length > 0 ? points : undefined} />
                                 </motion.div>
                               )}
                             </AnimatePresence>
