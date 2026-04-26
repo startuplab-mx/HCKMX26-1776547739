@@ -505,10 +505,10 @@ export default function DashboardPage() {
               )}
 
               {/* ── CTI ──────────────────────────────────────────────────── */}
-              {activePage === "cti" && <CTIView />}
+              {activePage === "cti" && <CTIView recentGuardEvents={recentGuardEvents} />}
 
               {/* ── Sections ─────────────────────────────────────────────── */}
-              {activePage === "signals"  && <DigitalSignalsView />}
+              {activePage === "signals"  && <DigitalSignalsView recentGuardEvents={recentGuardEvents} />}
               {activePage === "reports"  && <ReportsView />}
               {activePage === "settings" && <SettingsView />}
 

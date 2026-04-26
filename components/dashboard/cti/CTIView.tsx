@@ -9,9 +9,11 @@ import PartnerEscalation from "./PartnerEscalation";
 import ImpactAnalytics from "./ImpactAnalytics";
 import IntelligenceQueue from "./IntelligenceQueue";
 import AlertDetailDrawer from "./AlertDetailDrawer";
+import RiskActors from "./RiskActors";
 import type { CaseStatus } from "@/lib/mock/ctiData";
+import type { GuardEvent } from "@/lib/types/heatmap";
 
-export default function CTIView() {
+export default function CTIView({ recentGuardEvents }: { recentGuardEvents?: GuardEvent[] }) {
   const [selectedId, setSelectedId]         = useState<string | null>(null);
   const [localStatuses, setLocalStatuses]   = useState<Record<string, CaseStatus>>({});
 
@@ -78,11 +80,14 @@ export default function CTIView() {
       {/* Impact analytics */}
       <ImpactAnalytics />
 
+      {/* Risk actors */}
+      <RiskActors />
+
       {/* Layers Guard ingestion feed — clickable rows */}
       <LayersGuardIngestion onSelectAlert={setSelectedId} />
 
       {/* Artifacts panel */}
-      <ArtifactsPanel />
+      <ArtifactsPanel recentGuardEvents={recentGuardEvents} />
 
       {/* Intelligence queue — clickable rows + live status overrides */}
       <IntelligenceQueue

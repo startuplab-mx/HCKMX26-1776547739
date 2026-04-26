@@ -108,6 +108,24 @@ export interface AlertArtifact {
   description: string;
 }
 
+export interface EvidenceItem {
+  id:          string;
+  title:       string;
+  description: string;
+  url:         string;
+  timestamp:   string;
+  source:      string;
+}
+
+export interface AlertIOC {
+  tipo:        string;
+  valor:       string;
+  categoria:   string;
+  severidad:   Severity;
+  confianza:   number;
+  explicacion: string;
+}
+
 export interface AlertTimelineEvent {
   time: string;
   title: string;
@@ -147,6 +165,17 @@ export interface AlertCase {
     lastSent: string | null;
     reportsSent: number;
   };
+  // Enriched fields — optional for backward compatibility
+  riskScore?:          number;
+  hypothesis?:         string;
+  geolocation?:        string;
+  language?:           string;
+  accountAge?:         string;
+  accountStatus?:      string;
+  evidence?:           EvidenceItem[];
+  iocEntries?:         AlertIOC[];
+  recommendedActions?: string[];
+  analystNotes?:       string;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -220,92 +249,65 @@ export const severityDistribution: SeverityBucket[] = [
 
 export const layersGuardEvents: GuardEvent[] = [
   {
-    id: "g1",
-    timestamp: "2026-04-25T16:42:00Z",
+    id: "tk-001",
+    timestamp: "2026-04-26T08:48:00Z",
     platform: "tiktok",
     source: "Layers Guard — TikTok Monitor",
-    snippet: "Se detectó patrón de reclutamiento clandestino: cuenta @vida_facil_92 envió 6 mensajes directos con promesas económicas y redirección a Telegram a perfil protegido.",
+    snippet: "Cuenta @user1334248711265 creada hace menos de 24 h con privacidad máxima, geolocalización inconsistente (Japón, posible VPN) e idioma ZH. Sin contenido publicado. Patrón compatible con cuenta desechable para reclutamiento efímero.",
     severity: "critical",
     processed: false,
   },
   {
-    id: "g2",
-    timestamp: "2026-04-25T16:38:00Z",
-    platform: "instagram",
-    source: "Layers Guard — Instagram Monitor",
-    snippet: "Secuencia conversacional compatible con patrón de grooming detectada: 3 semanas de contacto progresivo, solicitud de fotografías y propuesta de encuentro.",
-    severity: "critical",
-    processed: false,
-  },
-  {
-    id: "g3",
-    timestamp: "2026-04-25T16:21:00Z",
-    platform: "discord",
-    source: "Layers Guard — Discord Monitor",
-    snippet: "Cuenta externa inició 14 interacciones en 48 horas con menor en servidor de videojuegos. Lenguaje con dependencia emocional e invitación a canal privado.",
+    id: "tk-002",
+    timestamp: "2026-04-26T08:51:00Z",
+    platform: "tiktok",
+    source: "Layers Guard — TikTok Monitor",
+    snippet: "Perfil @angelriver053 (Tamaulipas · 871 seguidores · 9,376 me gusta · engagement 3.5%) con actividad concentrada los viernes 23:00 CST. Indicadores de afinidad con narcocultura identificados en comentarios. Monitoreo activo.",
     severity: "high",
     processed: false,
   },
   {
-    id: "g4",
-    timestamp: "2026-04-25T16:10:00Z",
-    platform: "telegram",
-    source: "Layers Guard — Telegram Monitor",
-    snippet: "Intento de migración detectado: cuenta desconocida intentó trasladar conversación desde Instagram hacia grupo privado de Telegram con enlace de invitación.",
+    id: "tk-003",
+    timestamp: "2026-04-26T08:35:00Z",
+    platform: "tiktok",
+    source: "Layers Guard — TikTok Monitor",
+    snippet: "Señales de código simbólico detectadas: emojis 🥷🪖🍕🐔😈 presentes de forma recurrente en comentarios hacia perfiles con indicadores de minoría de edad. Patrón compatible con comunicación encubierta entre actores de riesgo.",
+    severity: "high",
+    processed: false,
+  },
+  {
+    id: "tk-004",
+    timestamp: "2026-04-26T07:22:00Z",
+    platform: "tiktok",
+    source: "Layers Guard — TikTok Monitor",
+    snippet: "Audios 'Reynosa la Maldosa' y 'El Canasteo' detectados en videos dirigidos a perfiles con indicadores de menores. Contenido con referencias a reclutamiento forzado y actividad de crimen organizado.",
     severity: "high",
     processed: true,
   },
   {
-    id: "g5",
-    timestamp: "2026-04-25T15:57:00Z",
+    id: "tk-005",
+    timestamp: "2026-04-26T06:58:00Z",
+    platform: "tiktok",
+    source: "Layers Guard — TikTok Monitor",
+    snippet: "Keyword 'trabajo fácil' detectada en 12 publicaciones recientes con indicadores de reclutamiento aspiracional. Patrón de redirección a contacto privado identificado en 7 de los 12 casos. Posible campaña coordinada.",
+    severity: "high",
+    processed: true,
+  },
+  {
+    id: "tk-006",
+    timestamp: "2026-04-26T05:44:00Z",
+    platform: "tiktok",
+    source: "Layers Guard — TikTok Monitor",
+    snippet: "Patrón de 'mensaje privado' detectado en 8 cuentas nuevas de TikTok con actividad concentrada en DMs hacia perfiles de menores. Sin publicaciones públicas — perfiles orientados exclusivamente a contacto directo.",
+    severity: "medium",
+    processed: false,
+  },
+  {
+    id: "rblx-001",
+    timestamp: "2026-04-26T04:15:00Z",
     platform: "roblox",
     source: "Layers Guard — Roblox Monitor",
-    snippet: "Red de 5 cuentas con comportamiento coordinado identificada en Roblox: regalos virtuales, invitaciones repetidas y petición de datos fuera de la plataforma.",
-    severity: "high",
-    processed: false,
-  },
-  {
-    id: "g6",
-    timestamp: "2026-04-25T15:44:00Z",
-    platform: "whatsapp",
-    source: "Layers Guard — WhatsApp Monitor",
-    snippet: "Mensajes con indicadores de manipulación emocional: frases de dependencia afectiva, urgencia para responder y solicitud de secreto hacia familiares.",
-    severity: "high",
-    processed: false,
-  },
-  {
-    id: "g7",
-    timestamp: "2026-04-25T15:30:00Z",
-    platform: "instagram",
-    source: "Layers Guard — Instagram Monitor",
-    snippet: "Señales de coerción: cuenta @regalo_especial_mx envió mensajes con presión para compartir ubicación y fotografías bajo amenaza velada de 'consecuencias'.",
-    severity: "medium",
-    processed: true,
-  },
-  {
-    id: "g8",
-    timestamp: "2026-04-25T15:12:00Z",
-    platform: "youtube",
-    source: "Layers Guard — Web Monitor",
-    snippet: "Exposición reiterada a contenido que normaliza relaciones adulto-menor: 23 videos en 4 horas desde cuentas no verificadas con lenguaje manipulador.",
-    severity: "medium",
-    processed: true,
-  },
-  {
-    id: "g9",
-    timestamp: "2026-04-25T14:55:00Z",
-    platform: "tiktok",
-    source: "Layers Guard — TikTok Monitor",
-    snippet: "Hashtag #amigos_especiales utilizado en 8 publicaciones dirigidas a perfiles de menores con contenido aspiracional y promesas de regalos.",
-    severity: "medium",
-    processed: false,
-  },
-  {
-    id: "g10",
-    timestamp: "2026-04-25T14:33:00Z",
-    platform: "discord",
-    source: "Layers Guard — Discord Monitor",
-    snippet: "Intento de suplantación de identidad: cuenta con avatar y nombre similar a figura pública juvenil intentó agregar a menor en servidor de gaming.",
+    snippet: "Red de 3 cuentas nuevas en Roblox ofreciendo Robux gratuitos condicionados a datos personales vía formulario externo. Dominio vinculado registrado hace 7 días. Patrón compatible con captación de datos de menores.",
     severity: "high",
     processed: false,
   },

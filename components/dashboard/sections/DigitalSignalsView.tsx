@@ -1,18 +1,19 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { RefreshCw, Copy } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import {
   digitalSignalsMetrics,
   digitalSignalsFeed,
   platformDistributionSignals,
   triggerKeywords,
-  topIOCs,
   type SignalSeverity,
   type SignalStatus,
   type SignalType,
 } from "@/lib/mock/dashboardSectionsData";
-import { emojiIocs, emojiSymbols } from "@/lib/mock/emojiIocs";
+import { emojiSymbols } from "@/lib/mock/emojiIocs";
+import type { GuardEvent } from "@/lib/types/heatmap";
+import RiskIndicatorsTable from "@/components/dashboard/RiskIndicatorsTable";
 
 // ── Config maps ───────────────────────────────────────────────────────────────
 
@@ -24,28 +25,19 @@ const SEV_CFG: Record<SignalSeverity, { bg: string; text: string; dot: string; l
 };
 
 const STATUS_CFG: Record<SignalStatus, { bg: string; text: string; label: string }> = {
-  new:        { bg: "bg-blue-50",    text: "text-blue-700",   label: "Nueva"       },
-  processing: { bg: "bg-amber-50",   text: "text-amber-700",  label: "Procesando"  },
-  classified: { bg: "bg-green-50",   text: "text-green-700",  label: "Clasificada" },
-  archived:   { bg: "bg-slate-100",  text: "text-slate-500",  label: "Archivada"   },
+  new:        { bg: "bg-blue-50",   text: "text-blue-700",  label: "Nueva"       },
+  processing: { bg: "bg-amber-50",  text: "text-amber-700", label: "Procesando"  },
+  classified: { bg: "bg-green-50",  text: "text-green-700", label: "Clasificada" },
+  archived:   { bg: "bg-slate-100", text: "text-slate-500", label: "Archivada"   },
 };
 
 const TYPE_LABELS: Record<SignalType, string> = {
-  keyword_trigger:      "Keyword detonante",
-  suspicious_url:       "URL sospechosa",
-  private_redirect:     "Redirección privada",
-  coordinated_account:  "Cuenta coordinada",
-  risky_hashtag:        "Hashtag riesgoso",
-  associated_ip:        "IP asociada",
-};
-
-const IOC_TYPE_CFG: Record<string, { label: string; bg: string; text: string }> = {
-  url:     { label: "URL",       bg: "bg-orange-50",  text: "text-orange-700"  },
-  ip:      { label: "IP",        bg: "bg-blue-50",    text: "text-blue-700"    },
-  handle:  { label: "Handle",    bg: "bg-purple-50",  text: "text-purple-700"  },
-  keyword: { label: "Keyword",   bg: "bg-amber-50",   text: "text-amber-700"   },
-  hashtag: { label: "Hashtag",   bg: "bg-teal-50",    text: "text-teal-700"    },
-  emoji:   { label: "Emoji IOC", bg: "bg-violet-50",  text: "text-violet-700"  },
+  keyword_trigger:     "Keyword detonante",
+  suspicious_url:      "URL sospechosa",
+  private_redirect:    "Redirección privada",
+  coordinated_account: "Cuenta coordinada",
+  risky_hashtag:       "Hashtag riesgoso",
+  associated_ip:       "IP asociada",
 };
 
 const PLATFORM_COLORS: Record<string, string> = {
@@ -56,12 +48,6 @@ const PLATFORM_COLORS: Record<string, string> = {
   Telegram:      "#06b6d4",
   "Web / Otros": "#64748b",
 };
-
-// ── Emoji detection ───────────────────────────────────────────────────────────
-
-function detectEmojiIOCs(value: string) {
-  return emojiIocs.filter((e) => value.includes(e.symbol));
-}
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -125,41 +111,9 @@ function KeywordChips() {
   );
 }
 
-// ── Emoji IOC tooltip cell ────────────────────────────────────────────────────
-
-function EmojiIOCCell({ value, emojiMeta }: { value: string; emojiMeta: NonNullable<(typeof topIOCs)[number]["emojiMeta"]> }) {
-  return (
-    <div className="relative group inline-flex flex-col gap-1">
-      {/* Large emoji with tooltip */}
-      <div className="flex items-center gap-2.5">
-        <span
-          className="text-3xl leading-none select-none"
-          role="img"
-          aria-label={emojiMeta.label}
-        >
-          {value}
-        </span>
-        <div className="flex flex-col gap-0.5">
-          <span className="text-xs font-semibold text-slate-800">{emojiMeta.label}</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-violet-50 text-violet-600 font-medium w-fit">
-            {emojiMeta.category}
-          </span>
-        </div>
-      </div>
-      {/* Hover tooltip */}
-      <div className="absolute bottom-full left-0 mb-2 w-56 rounded-xl bg-slate-800 text-white text-[11px] px-3 py-2 leading-relaxed
-                      opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-20 shadow-lg">
-        <span className="font-semibold text-violet-300">Patrón semántico:</span>
-        <br />
-        {emojiMeta.meaning}
-      </div>
-    </div>
-  );
-}
-
 // ── Main view ─────────────────────────────────────────────────────────────────
 
-export default function DigitalSignalsView() {
+export default function DigitalSignalsView({ recentGuardEvents = [] }: { recentGuardEvents?: GuardEvent[] }) {
   const [lastRefresh, setLastRefresh] = useState<string>(
     new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
   );
@@ -249,11 +203,10 @@ export default function DigitalSignalsView() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredFeed.map((sig) => {
-                const sev             = SEV_CFG[sig.severity];
-                const sta             = STATUS_CFG[sig.status];
-                const time            = new Date(sig.timestamp).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
-                const detectedEmojis  = detectEmojiIOCs(sig.value);
-                const hasEmojiIOC     = detectedEmojis.length > 0;
+                const sev         = SEV_CFG[sig.severity];
+                const sta         = STATUS_CFG[sig.status];
+                const time        = new Date(sig.timestamp).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
+                const hasEmojiIOC = emojiSymbols.some((s) => sig.value.includes(s));
                 return (
                   <tr key={sig.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3 font-mono text-[10px] text-slate-400 whitespace-nowrap">{sig.id}</td>
@@ -304,93 +257,15 @@ export default function DigitalSignalsView() {
             </tbody>
           </table>
           {filteredFeed.length === 0 && (
-            <div className="py-12 text-center text-sm text-slate-400">No hay señales con los filtros seleccionados.</div>
+            <div className="py-12 text-center text-sm text-slate-400">
+              No hay señales con los filtros seleccionados.
+            </div>
           )}
         </div>
       </div>
 
-      {/* Top IOCs */}
-      <div className="rounded-2xl border border-slate-100 bg-white shadow-card overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100">
-          <h3 className="text-sm font-semibold text-slate-800">Top IOCs</h3>
-          <p className="text-[11px] text-slate-400 mt-0.5">Indicadores de compromiso con mayor frecuencia de detección · incluye Emoji IOCs semánticos</p>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-slate-100 bg-slate-50">
-                <th className="text-left px-4 py-2.5 font-semibold text-slate-400 uppercase tracking-wide text-[10px]">Tipo</th>
-                <th className="text-left px-4 py-2.5 font-semibold text-slate-400 uppercase tracking-wide text-[10px]">Valor</th>
-                <th className="text-left px-4 py-2.5 font-semibold text-slate-400 uppercase tracking-wide text-[10px] hidden sm:table-cell">Severidad</th>
-                <th className="text-right px-4 py-2.5 font-semibold text-slate-400 uppercase tracking-wide text-[10px] hidden sm:table-cell">Detecciones</th>
-                <th className="text-left px-4 py-2.5 font-semibold text-slate-400 uppercase tracking-wide text-[10px] hidden md:table-cell">Última detección</th>
-                <th className="px-4 py-2.5" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {topIOCs.map((ioc) => {
-                const typeCfg = IOC_TYPE_CFG[ioc.type] ?? IOC_TYPE_CFG["keyword"];
-                const sev     = SEV_CFG[ioc.severity];
-                const isEmoji = ioc.type === "emoji";
-                return (
-                  <tr
-                    key={ioc.id}
-                    className={`hover:bg-slate-50 transition-colors ${isEmoji ? "bg-violet-50/30" : ""}`}
-                  >
-                    {/* Type badge */}
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${typeCfg.bg} ${typeCfg.text}`}>
-                        {typeCfg.label}
-                      </span>
-                    </td>
-                    {/* Value — emoji or plain */}
-                    <td className="px-4 py-3 max-w-[240px]">
-                      {isEmoji && ioc.emojiMeta ? (
-                        <EmojiIOCCell value={ioc.value} emojiMeta={ioc.emojiMeta} />
-                      ) : (
-                        <span className="font-mono text-[11px] text-slate-700 truncate block">{ioc.value}</span>
-                      )}
-                    </td>
-                    {/* Severity */}
-                    <td className="px-4 py-3 hidden sm:table-cell">
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${sev.bg} ${sev.text}`}>
-                        {sev.label}
-                      </span>
-                    </td>
-                    {/* Hits */}
-                    <td className="px-4 py-3 text-right tabular-nums font-semibold text-slate-600 hidden sm:table-cell">
-                      {ioc.hits.toLocaleString()}
-                    </td>
-                    {/* Last seen */}
-                    <td className="px-4 py-3 text-slate-400 hidden md:table-cell">{ioc.lastSeen}</td>
-                    {/* Copy — only for non-emoji rows */}
-                    <td className="px-4 py-3 text-right">
-                      {!isEmoji && (
-                        <button
-                          onClick={() => navigator.clipboard.writeText(ioc.value).catch(() => {})}
-                          className="p-1.5 rounded-lg text-slate-300 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-                          title="Copiar"
-                        >
-                          <Copy className="h-3.5 w-3.5" />
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Emoji IOC legend */}
-        <div className="px-5 py-3 border-t border-violet-100 bg-violet-50/40">
-          <p className="text-[11px] text-violet-700 leading-relaxed">
-            <span className="font-semibold">Emoji IOCs:</span>{" "}
-            representan patrones semánticos utilizados en entornos digitales para comunicar afiliación,
-            intención o contexto de riesgo. Requieren validación humana para confirmar relevancia contextual.
-          </p>
-        </div>
-      </div>
+      {/* Unified risk indicators */}
+      <RiskIndicatorsTable recentGuardEvents={recentGuardEvents} />
     </div>
   );
 }

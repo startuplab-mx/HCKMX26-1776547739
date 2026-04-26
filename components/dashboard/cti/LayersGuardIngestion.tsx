@@ -2,6 +2,7 @@
 
 import { Shield, CheckCircle2 } from "lucide-react";
 import { layersGuardEvents, getSeverityConfig, getPlatformConfig, getAlertCase, type GuardEvent } from "@/lib/mock/ctiData";
+import { getGuardAlertCase } from "@/lib/mock/guardAlertsData";
 
 interface Props {
   onSelectAlert?: (id: string) => void;
@@ -11,7 +12,7 @@ function EventRow({ ev, onSelectAlert }: { ev: GuardEvent; onSelectAlert?: (id: 
   const sev  = getSeverityConfig(ev.severity);
   const plat = getPlatformConfig(ev.platform);
   const time = new Date(ev.timestamp).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
-  const hasDetail = !!getAlertCase(ev.id);
+  const hasDetail = !!(getGuardAlertCase(ev.id) ?? getAlertCase(ev.id));
 
   return (
     <div
