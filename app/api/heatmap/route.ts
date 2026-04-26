@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const rawLimit    = searchParams.get("limit");
+  const eventsLimit = rawLimit ? Math.min(10000, Math.max(1, parseInt(rawLimit, 10))) : 10000;
   // ── 1. Validate environment variables ──────────────────────────────────────
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -28,7 +31,7 @@ export async function GET() {
         .select("id, latitud, longitud, criticidad, delito, categoria_delito, alcaldia_hecho, colonia_hecho")
         .not("latitud", "is", null)
         .not("longitud", "is", null)
-        .limit(8000),
+        .limit(eventsLimit),
 
       supabase
         .from("layers_guard_events")

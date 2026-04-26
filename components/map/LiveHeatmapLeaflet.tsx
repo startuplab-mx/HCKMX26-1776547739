@@ -51,10 +51,12 @@ function HeatLayer({ points, gradient, label, radius = 18, blur = 15 }: HeatLaye
     // Use reduce (not spread) to avoid call-stack overflow on large arrays
     const maxIntensity = points.reduce((m, p) => Math.max(m, p.intensity), 1);
 
+    // Enforce source-specific minimums so points are always visible
+    const minWeight = label === "guard" ? 0.9 : 0.75;
     const heatData: [number, number, number][] = points.map((p) => [
       p.lat,
       p.lng,
-      p.intensity / maxIntensity,
+      Math.max(minWeight, p.intensity / maxIntensity),
     ]);
 
     console.log(
@@ -76,8 +78,19 @@ function HeatLayer({ points, gradient, label, radius = 18, blur = 15 }: HeatLaye
 
 // ── Gradient presets ─────────────────────────────────────────────────────────
 
-const EVENTS_GRADIENT: Record<number, string> = { 0.2: "#fbbf24", 0.5: "#f97316", 0.8: "#ef4444" };
-const GUARD_GRADIENT:  Record<number, string> = { 0.2: "#a5b4fc", 0.5: "#6366f1", 0.8: "#4338ca" };
+const EVENTS_GRADIENT: Record<number, string> = {
+  0.10: "#fef3c7",
+  0.25: "#fbbf24",
+  0.45: "#f97316",
+  0.70: "#ef4444",
+  1.00: "#7f1d1d",
+};
+const GUARD_GRADIENT: Record<number, string> = {
+  0.10: "#ede9fe",
+  0.30: "#a78bfa",
+  0.55: "#7c3aed",
+  0.80: "#4c1d95",
+};
 
 // ── Loading / error states ────────────────────────────────────────────────────
 
@@ -205,7 +218,7 @@ export default function LiveHeatmapLeaflet() {
   return (
     <div className="absolute inset-0">
       <MapContainer
-        center={[19.41, -99.15]}
+        center={[19.4326, -99.1332]}
         zoom={11}
         style={{ height: "100%", width: "100%" }}
         scrollWheelZoom={false}
@@ -219,25 +232,25 @@ export default function LiveHeatmapLeaflet() {
           maxZoom={20}
         />
 
-        {/* Territorial events — warm orange/red */}
+        {/* Territorial events — warm orange/red, high radius for density visibility */}
         {eventPoints.length > 0 && (
           <HeatLayer
             points={eventPoints}
             gradient={EVENTS_GRADIENT}
             label="events"
-            radius={18}
-            blur={15}
+            radius={38}
+            blur={28}
           />
         )}
 
-        {/* Layers Guard digital alerts — cool indigo/violet */}
+        {/* Layers Guard digital alerts — cool violet, slightly larger for prominence */}
         {guardPoints.length > 0 && (
           <HeatLayer
             points={guardPoints}
             gradient={GUARD_GRADIENT}
             label="guard"
-            radius={20}
-            blur={18}
+            radius={42}
+            blur={32}
           />
         )}
       </MapContainer>
