@@ -31,6 +31,7 @@ Jopi es una aplicación educativa interactiva con un tema espacial, diseñada pa
 ## 🚀 Instalación y Ejecución
 
 1. **Clona el repositorio**:
+
    ```bash
    git clone https://github.com/tu-usuario/jopi.git
    cd jopi
