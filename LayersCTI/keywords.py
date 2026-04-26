@@ -1,0 +1,111 @@
+import unicodedata
+
+# Patrones de reclutamiento + contenido narco, organizados por nivel de riesgo
+KEYWORDS = {
+    "alto": {
+        # Reclutamiento directo / operación
+        "reclutar": 7,
+        "levantar": 7,
+        "encargo": 7,
+        "encargo especial": 7,
+        "halcon": 7,
+        "punto": 7,
+        "mercancia": 7,
+        "mover": 7,
+        "entrega": 7,
+        "paquete": 7,
+        "fierro": 7,
+        "arma": 7,
+        "convoy": 7,
+        "ruta": 7,
+        "operativo": 7,
+        "turno": 7,
+        "vigilancia": 7,
+        "bajarlo": 7,
+        "plaza": 7,
+        "gente de confianza": 7,
+        # Narco-violencia explícita
+        "sicario": 7,
+        "gatillero": 7,
+        "ejecutado": 7,
+        "encajuelado": 7,
+        "baleado": 7,
+        "levanton": 7,
+        "cuerno de chivo": 7,
+        "jefe de jefes": 7,
+        # Drogas explícitas
+        "fentanilo": 7,
+        "metanfetamina": 7,
+        "heroina": 7,
+        "cocaina": 7,
+        "cristal": 7,
+        # Organización
+        "cartel": 7,
+        "capo": 7,
+    },
+    "medio": {
+        # Promesas de reclutamiento
+        "oportunidad": 3,
+        "ganar bien": 3,
+        "sin experiencia": 3,
+        "discreto": 3,
+        "urgente": 3,
+        "hoy mismo": 3,
+        "pago diario": 3,
+        "efectivo": 3,
+        "apoyo economico": 3,
+        "traslado": 3,
+        "viaje": 3,
+        "hospedaje": 3,
+        "recomendado": 3,
+        "ingreso rapido": 3,
+        "sin papeles": 3,
+        "trabajo facil": 3,
+        "solo necesitas celular": 3,
+        "buen pago": 3,
+        # Contexto narco
+        "droga": 3,
+        "trafico": 3,
+        "carga": 3,
+        "mota": 3,
+        "perico": 3,
+        "buchon": 3,
+        "trokona": 3,
+        "mafioso": 3,
+        "narcocorrido": 3,
+        "narco": 3,
+        "patron": 3,
+        "jefe": 3,
+        "clave": 3,
+        "gente": 3,
+    },
+    "bajo": {
+        # Señales débiles — suman en contexto
+        "amigo": 1,
+        "compa": 1,
+        "bro": 1,
+        "jale": 1,
+        "chamba": 1,
+        "feria": 1,
+        "lana": 1,
+        "varo": 1,
+        "ayuda": 1,
+        "mensaje": 1,
+        "privado": 1,
+        "grupo": 1,
+        "info": 1,
+        "detalles": 1,
+        "inbox": 1,
+        "whatsapp": 1,
+        "telegram": 1,
+        "corrido": 1,
+        "cuerno": 1,
+        "rifle": 1,
+    },
+}
+
+
+def normalizar(text: str) -> str:
+    text = text.lower()
+    nfkd = unicodedata.normalize("NFD", text)
+    return "".join(c for c in nfkd if not unicodedata.combining(c))
