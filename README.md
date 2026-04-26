@@ -8,6 +8,8 @@ It serves as the core intelligence layer of the **Layers ecosystem**, enabling i
 
 ## 🚀 Overview
 
+Link a video: https://drive.google.com/file/d/1XNyrRCG2gu7hvspGlwBpmdzPqR0vo4hW/view?usp=share_link
+
 LayersIntel is not a data aggregator.
 
 It is a **multi-layer intelligence engine** that:
