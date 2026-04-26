@@ -34,6 +34,7 @@ import Topbar from "@/components/dashboard/Topbar";
 import MapFilters from "@/components/map/MapFilters";
 import DashboardMap from "@/components/map/DashboardMap";
 import AnalyticsCharts from "@/components/charts/AnalyticsCharts";
+import CTIView from "@/components/dashboard/cti/CTIView";
 import type { MapViewMode } from "@/components/map/FilteredMapLeaflet";
 
 // ── Derived stats helpers ─────────────────────────────────────────────────────
@@ -166,6 +167,7 @@ export default function DashboardPage() {
     dashboard: "Resumen General",
     map:       "Inteligencia de Mapa",
     signals:   "Señales Digitales",
+    cti:       "Cyber Threat Intelligence",
     reports:   "Informes",
     settings:  "Configuración",
   };
@@ -501,6 +503,9 @@ export default function DashboardPage() {
                   </AnimatePresence>
                 </div>
               )}
+
+              {/* ── CTI page ─────────────────────────────────────────────── */}
+              {activePage === "cti" && <CTIView />}
 
               {/* ── Placeholder pages ─────────────────────────────────────── */}
               {activePage === "signals"  && <PlaceholderPage icon={Activity}  title="Señales Digitales" />}

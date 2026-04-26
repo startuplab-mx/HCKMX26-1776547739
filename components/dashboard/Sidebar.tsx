@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Fingerprint,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ export type SidebarPage =
   | "dashboard"
   | "map"
   | "signals"
+  | "cti"
   | "reports"
   | "settings";
 
@@ -35,6 +37,7 @@ const navItems: { id: SidebarPage; label: string; Icon: React.ElementType }[] = 
   { id: "dashboard", label: "Panel",                   Icon: LayoutDashboard },
   { id: "map",       label: "Inteligencia de Mapa",    Icon: Map             },
   { id: "signals",   label: "Señales Digitales",       Icon: Radio           },
+  { id: "cti",       label: "Cyber Threat Intel",      Icon: Fingerprint     },
   { id: "reports",   label: "Informes",                Icon: FileText        },
   { id: "settings",  label: "Configuración",           Icon: Settings        },
 ];
